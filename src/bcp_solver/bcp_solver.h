@@ -41,16 +41,7 @@ class BCPSolver
     // Vertex u has color greater or equal to i
     std::map<std::pair<int, int>, int> *y{};
 
-    static void bron_kerbosch(const std::vector<int> &R, std::vector<int> P, std::vector<int> X,
-                              const std::vector<std::vector<bool>> &adj, const std::vector<std::vector<int>> &weights,
-                              long long m, std::vector<int> &best_clique, long long &max_score);
-
-    static long long calculate_cut_size(const std::vector<int> &clique, int n,
-                                        const std::vector<std::vector<int>> &weights);
-
     void calculate_upper_bound();
-
-    void calculate_lower_bound();
 
     void create_variable();
 
@@ -67,7 +58,7 @@ class BCPSolver
     void symmetry_breaking() const;
 
   public:
-    explicit BCPSolver(const Graph *graph, int lower_bound = -1, int upper_bound = -1);
+    explicit BCPSolver(const Graph *graph, int upper_bound = -1);
 
     ~BCPSolver();
     SOLVER_STATUS non_optimal_solving(double time_limit);

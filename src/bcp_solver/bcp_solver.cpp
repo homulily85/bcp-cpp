@@ -11,88 +11,6 @@
 #include <ranges>
 #include <set>
 
-void BCPSolver::BCPSolver::bron_kerbosch(const std::vector<int> &R, std::vector<int> P, std::vector<int> X,
-                                         const std::vector<std::vector<bool>> &adj,
-                                         const std::vector<std::vector<int>> &weights, const long long m,
-                                         std::vector<int> &best_clique, long long &max_score)
-{
-    if (P.empty() && X.empty())
-    {
-        if (R.empty())
-            return;
-
-        const long long cut = calculate_cut_size(R, static_cast<int>(adj.size()), weights);
-
-        if (const long long score = static_cast<long long>(R.size()) * m + cut; score > max_score)
-        {
-            max_score = score;
-            best_clique = R;
-        }
-        return;
-    }
-
-    int pivot = -1;
-    if (!P.empty())
-        pivot = P[0];
-    else if (!X.empty())
-        pivot = X[0];
-
-    for (std::vector<int> P_copy = P; int v : P_copy)
-    {
-        if (pivot != -1 && adj[pivot][v])
-        {
-            continue;
-        }
-
-        std::vector<int> new_R = R;
-        new_R.push_back(v);
-
-        std::vector<int> new_P;
-        std::vector<int> new_X;
-
-        for (int p_node : P)
-        {
-            if (adj[v][p_node])
-                new_P.push_back(p_node);
-        }
-
-        for (int x_node : X)
-        {
-            if (adj[v][x_node])
-                new_X.push_back(x_node);
-        }
-
-        bron_kerbosch(new_R, new_P, new_X, adj, weights, m, best_clique, max_score);
-
-        if (auto it_p = std::ranges::find(P, v); it_p != P.end())
-            P.erase(it_p);
-        X.push_back(v);
-    }
-}
-
-long long BCPSolver::BCPSolver::calculate_cut_size(const std::vector<int> &clique, const int n,
-                                                   const std::vector<std::vector<int>> &weights)
-{
-    long long cut = 0;
-    std::vector in_clique(n, false);
-    for (const int node : clique)
-    {
-        in_clique[node] = true;
-    }
-
-    for (const int u : clique)
-    {
-        for (int v = 0; v < n; ++v)
-        {
-            if (!in_clique[v] && weights[u][v] > 0)
-            {
-                cut += weights[u][v];
-            }
-        }
-    }
-    return cut;
-}
-
 void BCPSolver::BCPSolver::calculate_upper_bound()
 {
     const int n = graph->get_number_of_nodes();
@@ -124,7 +42,7 @@ void BCPSolver::BCPSolver::calculate_upper_bound()
     }
 
     auto has_uncolored = [&]() -> bool {
-        return std::any_of(colors.begin(), colors.end(), [](int c) { return c == -1; });
+        return std::any_of(colors.begin(), colors.end(), [](const int c) { return c == -1; });
     };
 
     auto get_start_node = [&]() -> int {
@@ -134,8 +52,7 @@ void BCPSolver::BCPSolver::calculate_upper_bound()
         {
             if (colors[i] == -1)
             {
-                int deg = static_cast<int>(adj[i].size());
-                if (deg > max_deg)
+                if (const int deg = static_cast<int>(adj[i].size()); deg > max_deg)
                 {
                     max_deg = deg;
                     best_node = i;
@@ -147,8 +64,7 @@ void BCPSolver::BCPSolver::calculate_upper_bound()
 
     while (has_uncolored())
     {
-        int start_node = get_start_node();
-        if (start_node != -1)
+        if (int start_node = get_start_node(); start_node != -1)
         {
             saturations.emplace(start_node, 0);
         }
@@ -191,8 +107,7 @@ void BCPSolver::BCPSolver::calculate_upper_bound()
 
             for (const auto &key : adj[v] | std::views::keys)
             {
-                int w = key;
-                if (colors[w] == -1)
+                if (int w = key; colors[w] == -1)
                 {
                     neighbouring_colors[w].insert(v);
                     saturations.emplace(w, static_cast<int>(neighbouring_colors[w].size()));
@@ -202,109 +117,6 @@ void BCPSolver::BCPSolver::calculate_upper_bound()
     }
 
     upper_bound = max_color;
-}
-void BCPSolver::BCPSolver::calculate_lower_bound()
-{
-    const int n = graph->get_number_of_nodes();
-    const int m = graph->get_number_of_edges();
-
-    std::vector adj(n, std::vector(n, false));
-    std::vector weights(n, std::vector(n, 0));
-
-    if (const auto *edges = graph->get_edges())
-    {
-        for (const auto &edge : *edges)
-        {
-            int u = std::get<0>(edge);
-            int v = std::get<1>(edge);
-            int w = std::get<2>(edge);
-            if (u >= 0 && u < n && v >= 0 && v < n)
-            {
-                adj[u][v] = adj[v][u] = true;
-                weights[u][v] = weights[v][u] = w;
-            }
-        }
-    }
-
-    std::vector<int> max_clique_rep;
-    long long clique_val_rep = -1;
-
-    if (const double density = (n > 1) ? (2.0 * m) / (static_cast<double>(n) * n - n) : 0.0; density <= 0.2 && n < 200)
-    {
-        std::vector<int> R;
-        std::vector<int> P(n);
-        std::iota(P.begin(), P.end(), 0); // Fill 0 to n-1
-        std::vector<int> X;
-
-        bron_kerbosch(R, P, X, adj, weights, m, max_clique_rep, clique_val_rep);
-    }
-    // --- BRANCH 2: Heuristic (Maximal Independent Set on Complement) ---
-    else
-    {
-        // Finding MIS on Complement is equivalent to finding Maximal Clique on G.
-        // Logic: Shuffle nodes, greedily build clique by keeping only valid neighbors.
-
-        auto start_time = std::chrono::steady_clock::now();
-        int iterations = 300 * (n > 0 ? static_cast<int>(std::round(static_cast<double>(m) / n)) : 1);
-        if (iterations == 0)
-            iterations = 1;
-
-        std::vector<int> nodes(n);
-        std::iota(nodes.begin(), nodes.end(), 0);
-
-        for (int i = 0; i < iterations; ++i)
-        {
-            // Check time limit (100 seconds)
-            auto current_time = std::chrono::steady_clock::now();
-            if (std::chrono::duration_cast<std::chrono::seconds>(current_time - start_time).count() > 100)
-            {
-                break;
-            }
-
-            // Shuffle nodes (mimicking seed=i)
-            std::mt19937 g(i);
-            std::shuffle(nodes.begin(), nodes.end(), g);
-
-            // Greedy Maximal Clique Construction
-            std::vector<int> clique;
-            if (!nodes.empty())
-            {
-                // Start with first node in shuffled list
-                clique.push_back(nodes[0]);
-
-                // Keep track of candidates: nodes connected to ALL nodes in current clique
-                // Optimization: Just check against current clique members
-                for (size_t k = 1; k < nodes.size(); ++k)
-                {
-                    int candidate = nodes[k];
-                    bool connected_to_all = true;
-                    for (const int member : clique)
-                    {
-                        if (!adj[candidate][member])
-                        {
-                            connected_to_all = false;
-                            break;
-                        }
-                    }
-                    if (connected_to_all)
-                    {
-                        clique.push_back(candidate);
-                    }
-                }
-            }
-
-            // Calculate score
-            const long long cut = calculate_cut_size(clique, n, weights);
-
-            if (const long long new_val = static_cast<long long>(clique.size()) * m + cut; new_val > clique_val_rep)
-            {
-                clique_val_rep = new_val;
-                max_clique_rep = clique;
-            }
-        }
-    }
-
-    lower_bound = max_clique_rep[1];
 }
 
 void BCPSolver::BCPSolver::create_variable()
@@ -323,14 +135,6 @@ void BCPSolver::BCPSolver::create_variable()
             y->insert(std::pair<std::pair<int, int>, int>({i, c}, sat_solver->create_new_variable()));
         }
     }
-
-    // for (int i = 0; i < graph->get_number_of_nodes(); i++)
-    // {
-    //     for (int c = 1; c < span + 1; c++)
-    //     {
-    //         y->insert(std::pair<std::pair<int, int>, int>({i, c}, sat_solver->create_new_variable()));
-    //     }
-    // }
 }
 
 void BCPSolver::BCPSolver::encode()
@@ -442,8 +246,8 @@ void BCPSolver::BCPSolver::symmetry_breaking() const
     sat_solver->add_clause(-(*y)[{graph->get_highest_degree_vertex(), span / 2 + 1}]);
 }
 
-BCPSolver::BCPSolver::BCPSolver(const Graph *graph, const int lower_bound, const int upper_bound)
-    : graph(graph), upper_bound(upper_bound), lower_bound(lower_bound)
+BCPSolver::BCPSolver::BCPSolver(const Graph *graph, const int upper_bound)
+    : graph(graph), upper_bound(upper_bound)
 {
     if (this->upper_bound < 0)
     {
@@ -451,11 +255,6 @@ BCPSolver::BCPSolver::BCPSolver(const Graph *graph, const int lower_bound, const
     }
 
     span = this->upper_bound;
-
-    if (this->lower_bound < 0)
-    {
-        calculate_lower_bound();
-    }
 }
 BCPSolver::BCPSolver::~BCPSolver()
 {
@@ -607,7 +406,6 @@ std::unordered_map<std::string, double> BCPSolver::BCPSolver::get_statistics() c
     stats["V"] = graph->get_number_of_nodes();
     stats["E"] = graph->get_number_of_edges();
     stats["upper_bound"] = upper_bound;
-    stats["lower_bound"] = lower_bound;
     stats["variables"] = sat_solver_stats["variables"];
     stats["clauses"] = sat_solver_stats["clauses"];
     stats["status"] = status;
