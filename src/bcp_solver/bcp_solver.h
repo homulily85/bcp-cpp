@@ -25,22 +25,32 @@ enum SOLVER_STATUS
 class BCPSolver
 {
   private:
-    const Graph *graph;
-    int upper_bound;
+    const Graph *graph{};
+    int upper_bound{};
+    int lower_bound{};
 
-    SATSolver::SatSolver *sat_solver = new SATSolver::SatSolver();
-    SOLVER_STATUS status = UNKNOWN;
+    SATSolver::SatSolver *sat_solver{new SATSolver::SatSolver()};
+    SOLVER_STATUS status{UNKNOWN};
 
-    int span;
+    int span{};
 
-    double encoding_time = 0.0;
+    double encoding_time{};
 
     // Vertex u has color i
-    std::map<std::pair<int, int>, int> *x = nullptr;
+    std::map<std::pair<int, int>, int> *x{};
     // Vertex u has color greater or equal to i
-    std::map<std::pair<int, int>, int> *y = nullptr;
+    std::map<std::pair<int, int>, int> *y{};
+
+    static void bron_kerbosch(const std::vector<int> &R, std::vector<int> P, std::vector<int> X,
+                              const std::vector<std::vector<bool>> &adj, const std::vector<std::vector<int>> &weights,
+                              long long m, std::vector<int> &best_clique, long long &max_score);
+
+    static long long calculate_cut_size(const std::vector<int> &clique, int n,
+                                        const std::vector<std::vector<int>> &weights);
 
     void calculate_upper_bound();
+
+    void calculate_lower_bound();
 
     void create_variable();
 
@@ -57,16 +67,13 @@ class BCPSolver
     void symmetry_breaking() const;
 
   public:
-    explicit BCPSolver(const Graph *graph, int upper_bound = -1);
+    explicit BCPSolver(const Graph *graph, int lower_bound = -1, int upper_bound = -1);
 
     ~BCPSolver();
 
     SOLVER_STATUS solve(double time_limit = NO_TIME_LIMIT, bool find_optimal = false, bool incremental = false);
 
-    [[nodiscard]] int get_span() const
-    {
-        return (status != UNKNOWN && status != UNSATISFIABLE) ? span : -1;
-    }
+    [[nodiscard]] int get_span() const;
 
     [[nodiscard]] std::unordered_map<std::string, double> get_statistics() const;
 };

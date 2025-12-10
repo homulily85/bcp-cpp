@@ -8,6 +8,33 @@
 #include <iostream>
 #include <sstream>
 
+void BCPSolver::Graph::add_edge(const int i, const int j, const int w) const
+{
+    edges_list->emplace_back(i, j, w);
+    (*matrix)[i][j] = w;
+    (*matrix)[j][i] = w;
+}
+
+const std::vector<std::tuple<int, int, int>> *BCPSolver::Graph::get_edges() const
+{
+    return edges_list;
+}
+
+int BCPSolver::Graph::get_weight(int i, int j) const
+{
+    return (*matrix)[i][j];
+}
+
+int BCPSolver::Graph::get_number_of_nodes() const
+{
+    return n;
+}
+
+int BCPSolver::Graph::get_number_of_edges() const
+{
+    return static_cast<int>(edges_list->size());
+}
+
 int BCPSolver::Graph::get_highest_degree_vertex() const
 {
     if (n == 0)

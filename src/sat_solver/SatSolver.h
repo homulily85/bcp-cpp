@@ -19,17 +19,19 @@ namespace SATSolver
 class SatSolver
 {
   private:
-    int number_of_clauses = 0;
-    int number_of_variables = 0;
-    CaDiCaL::Solver *solver = new CaDiCaL::Solver();
-    std::vector<int> *last_feasible_model = nullptr;
-    int status = 0;
-    double time_accum = 0.0;
+    int number_of_clauses{};
+    int number_of_variables{};
+    CaDiCaL::Solver *solver{new CaDiCaL::Solver()};
+    std::vector<int> *last_feasible_model{};
+    int status{};
+    double time_accum{};
 
-    class AtomicTerminator final : public CaDiCaL::Terminator {
-    public:
+    class AtomicTerminator final : public CaDiCaL::Terminator
+    {
+      public:
         std::atomic<bool> force_terminate{false};
-        bool terminate() override {
+        bool terminate() override
+        {
             return force_terminate.load(std::memory_order_relaxed);
         }
     };

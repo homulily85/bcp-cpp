@@ -13,9 +13,9 @@ namespace BCPSolver
 class Graph
 {
   private:
-    std::vector<std::tuple<int, int, int>> *edges_list;
-    std::vector<std::vector<int>> *matrix;
-    int n;
+    std::vector<std::tuple<int, int, int>> *edges_list{};
+    std::vector<std::vector<int>> *matrix{};
+    int n{};
 
   public:
     explicit Graph(const int n)
@@ -30,32 +30,15 @@ class Graph
         delete matrix;
     }
 
-    void add_edge(const int i, const int j, const int w) const
-    {
-        edges_list->emplace_back(i, j, w);
-        (*matrix)[i][j] = w;
-        (*matrix)[j][i] = w;
-    }
+    void add_edge(int i, int j, int w) const;
 
-    [[nodiscard]] const std::vector<std::tuple<int, int, int>> *get_edges() const
-    {
-        return edges_list;
-    }
+    [[nodiscard]] const std::vector<std::tuple<int, int, int>> *get_edges() const;
 
-    [[nodiscard]] int get_weight(int i, int j) const
-    {
-        return (*matrix)[i][j];
-    }
+    [[nodiscard]] int get_weight(int i, int j) const;
 
-    [[nodiscard]] int get_number_of_nodes() const
-    {
-        return n;
-    }
+    [[nodiscard]] int get_number_of_nodes() const;
 
-    [[nodiscard]] int get_number_of_edges() const
-    {
-        return static_cast<int>(edges_list->size());
-    }
+    [[nodiscard]] int get_number_of_edges() const;
 
     [[nodiscard]] int get_highest_degree_vertex() const;
 };

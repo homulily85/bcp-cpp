@@ -10,11 +10,14 @@ struct ProgramConfig
     std::string filename;
     double time_limit;
     int upper_bound;
+    int lower_bound;
     bool find_optimal;
     bool incremental_mode;
 
     // Constructor with defaults
-    ProgramConfig() : time_limit(BCPSolver::NO_TIME_LIMIT), upper_bound(-1), find_optimal(true), incremental_mode(false)
+    ProgramConfig()
+        : time_limit(BCPSolver::NO_TIME_LIMIT), upper_bound(-1), lower_bound(-1), find_optimal(true),
+          incremental_mode(false)
     {
     }
 };
@@ -29,6 +32,7 @@ class ArgParser
                   << "Options:\n"
                   << "  -t, --time_limit <int>       Set time limit (Default: NO_TIME_LIMIT)\n"
                   << "  -ub, --upper_bound           Set preferred upper bound\n"
+                  << "  -lb, --lower_bound           Set preferred lower bound\n"
                   << "  --no-optimal                 Disable finding optimal value (Default: enabled)\n"
                   << "  -i, --incremental            Enable incremental mode (Default: disabled)\n"
                   << "  -h, --help                   Show this help message\n";
@@ -57,12 +61,12 @@ class ArgParser
                     try
                     {
                         config.time_limit = std::stoi(argv[++i]); // Increment i to consume value
-                        if (config.time_limit<0)
+                        if (config.time_limit < 0)
                         {
                             throw std::invalid_argument("Invalid integer for time limit: " + std::string(argv[i]));
                         }
                     }
-                    catch (const std::exception &e)
+                    catch (const std::exception &)
                     {
                         throw std::invalid_argument("Invalid integer for time limit: " + std::string(argv[i]));
                     }
@@ -79,7 +83,7 @@ class ArgParser
                     try
                     {
                         config.upper_bound = std::stoi(argv[++i]); // Increment i to consume value
-                        if (config.upper_bound<0)
+                        if (config.upper_bound < 0)
                         {
                             throw std::invalid_argument("Invalid integer for upper_bound: " + std::string(argv[i]));
                         }
@@ -92,6 +96,28 @@ class ArgParser
                 else
                 {
                     throw std::invalid_argument("Missing value for upper bound flag");
+                }
+            }
+            else if (arg == "-lb" || arg == "--lower_bound")
+            {
+                if (i + 1 < argc)
+                {
+                    try
+                    {
+                        config.lower_bound = std::stoi(argv[++i]); // Increment i to consume value
+                        if (config.lower_bound < 0)
+                        {
+                            throw std::invalid_argument("Invalid integer for lower_bound: " + std::string(argv[i]));
+                        }
+                    }
+                    catch (const std::exception &e)
+                    {
+                        throw std::invalid_argument("Invalid integer for lower_bound: " + std::string(argv[i]));
+                    }
+                }
+                else
+                {
+                    throw std::invalid_argument("Missing value for lower bound flag");
                 }
             }
             else if (arg == "--no-optimal")
@@ -139,7 +165,7 @@ int main(int argc, char *argv[])
         {
             exit(1);
         }
-        auto *s = new BCPSolver::BCPSolver(g);
+        auto *s = new BCPSolver::BCPSolver(g, config.lower_bound, config.upper_bound);
         s->solve(config.time_limit, config.find_optimal, config.incremental_mode);
         for (auto stats = s->get_statistics(); const auto &[fst, snd] : stats)
         {
