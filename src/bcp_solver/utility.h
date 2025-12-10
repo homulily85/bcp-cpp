@@ -5,11 +5,15 @@
 #ifndef BCP_BMCP_UTILITY_H
 #define BCP_BMCP_UTILITY_H
 
+#include <iostream>
+#include <limits>
 #include <string>
 #include <vector>
 
 namespace BCPSolver
 {
+static constexpr double NO_TIME_LIMIT = std::numeric_limits<double>::lowest();
+
 class Graph
 {
   private:
@@ -44,6 +48,28 @@ class Graph
 };
 
 Graph *read_bcp_graph(const std::string &file_path);
+
+struct ProgramConfig
+{
+    std::string filename;
+    double time_limit;
+    int upper_bound;
+    bool find_optimal;
+    bool incremental_mode;
+
+    // Constructor with defaults
+    ProgramConfig() : time_limit(BCPSolver::NO_TIME_LIMIT), upper_bound(-1), find_optimal(true), incremental_mode(false)
+    {
+    }
+};
+
+class ArgParser
+{
+  public:
+    static void printUsage(const char *programName);
+
+    static ProgramConfig parse(int argc, char *argv[]);
+};
 
 } // namespace BCPSolver
 

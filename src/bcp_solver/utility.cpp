@@ -112,3 +112,104 @@ BCPSolver::Graph *BCPSolver::read_bcp_graph(const std::string &file_path)
     file.close();
     return g;
 }
+
+void BCPSolver::ArgParser::printUsage(const char *programName)
+{
+    std::cerr << "Usage: " << programName << " <filename> [options]\n"
+              << "Options:\n"
+              << "  -t, --time_limit <int>       Set time limit (Default: NO_TIME_LIMIT)\n"
+              << "  -ub, --upper_bound           Set preferred upper bound\n"
+              << "  --no-optimal                 Disable finding optimal value (Default: enabled)\n"
+              << "  -i, --incremental            Enable incremental mode (Default: disabled)\n"
+              << "  -h, --help                   Show this help message\n";
+}
+
+BCPSolver::ProgramConfig BCPSolver::ArgParser::parse(int argc, char *argv[])
+{
+    ProgramConfig config;
+    bool filenameFound = false;
+
+    // Iterate starting from 1 to skip program name
+    for (int i = 1; i < argc; ++i)
+    {
+
+        if (std::string arg = argv[i]; arg == "-h" || arg == "--help")
+        {
+            printUsage(argv[0]);
+            exit(0); // Exit gracefully if help is requested
+        }
+        else if (arg == "-t" || arg == "--time_limit")
+        {
+            if (i + 1 < argc)
+            {
+                try
+                {
+                    config.time_limit = std::stoi(argv[++i]); // Increment i to consume value
+                    if (config.time_limit < 0)
+                    {
+                        throw std::invalid_argument("Invalid integer for time limit: " + std::string(argv[i]));
+                    }
+                }
+                catch (const std::exception &)
+                {
+                    throw std::invalid_argument("Invalid integer for time limit: " + std::string(argv[i]));
+                }
+            }
+            else
+            {
+                throw std::invalid_argument("Missing value for time limit flag");
+            }
+        }
+        else if (arg == "-ub" || arg == "--upper_bound")
+        {
+            if (i + 1 < argc)
+            {
+                try
+                {
+                    config.upper_bound = std::stoi(argv[++i]); // Increment i to consume value
+                    if (config.upper_bound < 0)
+                    {
+                        throw std::invalid_argument("Invalid integer for upper_bound: " + std::string(argv[i]));
+                    }
+                }
+                catch (const std::exception &)
+                {
+                    throw std::invalid_argument("Invalid integer for upper_bound: " + std::string(argv[i]));
+                }
+            }
+            else
+            {
+                throw std::invalid_argument("Missing value for upper bound flag");
+            }
+        }
+        else if (arg == "--no-optimal")
+        {
+            config.find_optimal = false; // Flag to disable
+        }
+        else if (arg == "-i" || arg == "--incremental")
+        {
+            config.incremental_mode = true; // Flag to enable
+        }
+        else if (arg[0] == '-')
+        {
+            throw std::invalid_argument("Unknown flag: " + arg);
+        }
+        else
+        {
+            // Parse filename (first non-flag argument)
+            if (filenameFound)
+            {
+                throw std::invalid_argument("Multiple filenames provided or invalid argument order: " + arg);
+            }
+            config.filename = arg;
+            filenameFound = true;
+        }
+    }
+
+    if (!filenameFound)
+    {
+        throw std::runtime_error("Missing compulsory argument: filename");
+    }
+
+    return config;
+}

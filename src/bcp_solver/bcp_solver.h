@@ -12,7 +12,6 @@
 
 namespace BCPSolver
 {
-static constexpr double NO_TIME_LIMIT = std::numeric_limits<double>::lowest();
 
 enum SOLVER_STATUS
 {
