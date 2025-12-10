@@ -70,6 +70,10 @@ class BCPSolver
     explicit BCPSolver(const Graph *graph, int lower_bound = -1, int upper_bound = -1);
 
     ~BCPSolver();
+    SOLVER_STATUS non_optimal_solving(double time_limit);
+
+    SOLVER_STATUS optimal_solving_non_incremental(double time_limit);
+    SOLVER_STATUS optimal_solving_incremental(double time_limit);
 
     SOLVER_STATUS solve(double time_limit = NO_TIME_LIMIT, bool find_optimal = false, bool incremental = false);
 

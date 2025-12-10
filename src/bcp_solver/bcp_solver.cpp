@@ -464,103 +464,135 @@ BCPSolver::BCPSolver::~BCPSolver()
     delete y;
 }
 
-BCPSolver::SOLVER_STATUS BCPSolver::BCPSolver::solve(const double time_limit, const bool find_optimal,
-                                                     const bool incremental)
+BCPSolver::SOLVER_STATUS BCPSolver::BCPSolver::non_optimal_solving(const double time_limit)
 {
     encode();
-
-    int result;
-
-    if (!find_optimal)
+    if (const int result = sat_solver->solve(nullptr, time_limit); result == CaDiCaL::Status::UNKNOWN)
     {
-        result = sat_solver->solve(nullptr, time_limit);
-        if (result == CaDiCaL::Status::UNKNOWN)
-        {
-            status = UNKNOWN;
-            return status;
-        }
-        else
-        {
-            status = result == CaDiCaL::Status::SATISFIABLE ? SATISFIABLE : UNSATISFIABLE;
-            return status;
-        }
+        status = UNKNOWN;
+        return status;
     }
     else
     {
-        result =
-            time_limit != NO_TIME_LIMIT ? sat_solver->solve(nullptr, time_limit - encoding_time) : sat_solver->solve();
-        if (result == CaDiCaL::Status::UNKNOWN)
-        {
-            status = UNKNOWN;
-            return status;
-        }
-        if (result == CaDiCaL::Status::UNSATISFIABLE)
-        {
-            status = UNSATISFIABLE;
-            return status;
-        }
+        status = result == CaDiCaL::Status::SATISFIABLE ? SATISFIABLE : UNSATISFIABLE;
+        return status;
+    }
+}
 
-        while (result == CaDiCaL::Status::SATISFIABLE && span > lower_bound)
+BCPSolver::SOLVER_STATUS BCPSolver::BCPSolver::optimal_solving_non_incremental(const double time_limit)
+{
+    int result{non_optimal_solving(time_limit)};
+
+    if (result == UNKNOWN)
+    {
+        status = UNKNOWN;
+        return status;
+    }
+
+    if (result == UNSATISFIABLE)
+    {
+        status = UNSATISFIABLE;
+        return status;
+    }
+
+    while (result == SATISFIABLE || result == CaDiCaL::Status::SATISFIABLE && span > lower_bound)
+    {
+        sat_solver->reset();
+        span--;
+        encode();
+
+        if (time_limit == NO_TIME_LIMIT)
         {
-            if (!incremental)
+            result = sat_solver->solve();
+            if (result != CaDiCaL::Status::SATISFIABLE)
             {
-                sat_solver->reset();
-                span--;
-                encode();
-
-                if (time_limit == NO_TIME_LIMIT)
-                {
-                    result = sat_solver->solve();
-                    if (result != CaDiCaL::Status::SATISFIABLE)
-                    {
-                        span++;
-                    }
-                }
-                else
-                {
-                    const auto remaining_time =
-                        time_limit - encoding_time - sat_solver->get_statistics()["total_solving_time"];
-                    result = sat_solver->solve(nullptr, remaining_time);
-
-                    if (result != CaDiCaL::Status::SATISFIABLE)
-                    {
-                        span++;
-                    }
-                }
+                span++;
             }
-            else
+        }
+        else
+        {
+            const auto remaining_time = time_limit - encoding_time - sat_solver->get_statistics()["total_solving_time"];
+            result = sat_solver->solve(nullptr, remaining_time);
+
+            if (result != CaDiCaL::Status::SATISFIABLE)
             {
-                auto *assumptions = new std::vector<int>(graph->get_number_of_nodes());
-
-                for (int i = 0; i < graph->get_number_of_nodes(); i++)
-                {
-                    (*assumptions)[i] = -(*y)[{i, span}];
-                }
-                if (time_limit == NO_TIME_LIMIT)
-                {
-                    result = sat_solver->solve(assumptions);
-                    if (result == CaDiCaL::Status::SATISFIABLE)
-                    {
-                        span--;
-                    }
-                }
-                else
-                {
-                    const auto remaining_time =
-                        time_limit - encoding_time - sat_solver->get_statistics()["total_solving_time"];
-                    result = sat_solver->solve(assumptions, remaining_time);
-
-                    if (result == CaDiCaL::Status::SATISFIABLE)
-                    {
-                        span--;
-                    }
-                }
-                delete assumptions;
+                span++;
             }
         }
     }
+
     status = result != CaDiCaL::Status::UNKNOWN ? OPTIMAL : SATISFIABLE;
     return status;
+}
+
+BCPSolver::SOLVER_STATUS BCPSolver::BCPSolver::optimal_solving_incremental(const double time_limit)
+{
+    int result{non_optimal_solving(time_limit)};
+
+    if (result == UNKNOWN)
+    {
+        status = UNKNOWN;
+        return status;
+    }
+
+    if (result == UNSATISFIABLE)
+    {
+        status = UNSATISFIABLE;
+        return status;
+    }
+
+    while (result == SATISFIABLE || result == CaDiCaL::Status::SATISFIABLE && span > lower_bound)
+    {
+        auto *assumptions{new std::vector<int>(graph->get_number_of_nodes())};
+
+        for (int i = 0; i < graph->get_number_of_nodes(); i++)
+        {
+            (*assumptions)[i] = -(*y)[{i, span}];
+        }
+        if (time_limit == NO_TIME_LIMIT)
+        {
+            result = sat_solver->solve(assumptions);
+            if (result == CaDiCaL::Status::SATISFIABLE)
+            {
+                span--;
+            }
+        }
+        else
+        {
+            const auto remaining_time = time_limit - encoding_time - sat_solver->get_statistics()["total_solving_time"];
+            result = sat_solver->solve(assumptions, remaining_time);
+
+            if (result == CaDiCaL::Status::SATISFIABLE)
+            {
+                span--;
+            }
+        }
+        delete assumptions;
+    }
+
+    status = result != CaDiCaL::Status::UNKNOWN ? OPTIMAL : SATISFIABLE;
+    return status;
+}
+
+BCPSolver::SOLVER_STATUS BCPSolver::BCPSolver::solve(const double time_limit, const bool find_optimal,
+                                                     const bool incremental)
+{
+    if (!find_optimal)
+    {
+        return non_optimal_solving(time_limit);
+    }
+    else
+    {
+        if (!incremental)
+        {
+            return optimal_solving_non_incremental(time_limit);
+        }
+
+        else
+        {
+            return optimal_solving_incremental(time_limit);
+        }
+    }
 }
 
 int BCPSolver::BCPSolver::get_span() const
