@@ -5,13 +5,29 @@
 #ifndef BCP_BMCP_UTILITY_H
 #define BCP_BMCP_UTILITY_H
 
-#include <iostream>
 #include <limits>
 #include <string>
 #include <vector>
 
 namespace BCPSolver
 {
+
+enum SolverStatus
+{
+    UNKNOWN = -1,
+    UNSATISFIABLE = 0,
+    SATISFIABLE = 1,
+    OPTIMAL = 2,
+};
+
+enum SolvingMethod
+{
+    TwoVariablesGreater,
+    TwoVariablesLess,
+    OneVariableGreater,
+    OneVariableLess,
+};
+
 static constexpr double NO_TIME_LIMIT = std::numeric_limits<double>::lowest();
 
 class Graph
@@ -56,9 +72,11 @@ struct ProgramConfig
     int upper_bound;
     bool find_optimal;
     bool incremental_mode;
-
+    SolvingMethod solving_method;
     // Constructor with defaults
-    ProgramConfig() : time_limit(BCPSolver::NO_TIME_LIMIT), upper_bound(-1), find_optimal(true), incremental_mode(false)
+    ProgramConfig()
+        : time_limit(NO_TIME_LIMIT), upper_bound(-1), find_optimal(true), incremental_mode(false),
+          solving_method(TwoVariablesGreater)
     {
     }
 };

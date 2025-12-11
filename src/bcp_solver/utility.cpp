@@ -115,12 +115,16 @@ BCPSolver::Graph *BCPSolver::read_bcp_graph(const std::string &file_path)
 
 void BCPSolver::ArgParser::printUsage(const char *programName)
 {
-    std::cerr << "Usage: " << programName << " <filename> [options]\n"
+    std::cerr << "Usage: " << programName << " <filename> <method> [options]\n"
+              << "Arguments:\n"
+              << "  <filename>                   Path to the input file\n"
+              << "  <method>                     Method for solving: 'one-var-greater', "
+                 "'one-var-less','two-vars-greater', 'two-vars-less'\n\n"
               << "Options:\n"
-              << "  -t, --time_limit <int>       Set time limit (Default: NO_TIME_LIMIT)\n"
-              << "  -ub, --upper_bound           Set preferred upper bound\n"
-              << "  --no-optimal                 Disable finding optimal value (Default: enabled)\n"
-              << "  -i, --incremental            Enable incremental mode (Default: disabled)\n"
+              << "  -t, --time_limit <int>       Set time limit\n"
+              << "  -ub, --upper_bound <int>     Set preferred upper bound\n"
+              << "  --no-optimal                 Disable finding optimal value\n"
+              << "  -i, --incremental            Enable incremental mode\n"
               << "  -h, --help                   Show this help message\n";
 }
 
@@ -128,15 +132,16 @@ BCPSolver::ProgramConfig BCPSolver::ArgParser::parse(int argc, char *argv[])
 {
     ProgramConfig config;
     bool filenameFound = false;
+    bool methodFound = false;
 
-    // Iterate starting from 1 to skip program name
     for (int i = 1; i < argc; ++i)
     {
+        std::string arg = argv[i];
 
-        if (std::string arg = argv[i]; arg == "-h" || arg == "--help")
+        if (arg == "-h" || arg == "--help")
         {
             printUsage(argv[0]);
-            exit(0); // Exit gracefully if help is requested
+            exit(0);
         }
         else if (arg == "-t" || arg == "--time_limit")
         {
@@ -144,21 +149,17 @@ BCPSolver::ProgramConfig BCPSolver::ArgParser::parse(int argc, char *argv[])
             {
                 try
                 {
-                    config.time_limit = std::stoi(argv[++i]); // Increment i to consume value
+                    config.time_limit = std::stoi(argv[++i]);
                     if (config.time_limit < 0)
-                    {
-                        throw std::invalid_argument("Invalid integer for time limit: " + std::string(argv[i]));
-                    }
+                        throw std::exception();
                 }
-                catch (const std::exception &)
+                catch (...)
                 {
-                    throw std::invalid_argument("Invalid integer for time limit: " + std::string(argv[i]));
+                    throw std::invalid_argument("Invalid time limit: " + std::string(argv[i]));
                 }
             }
             else
-            {
-                throw std::invalid_argument("Missing value for time limit flag");
-            }
+                throw std::invalid_argument("Missing value for time limit");
         }
         else if (arg == "-ub" || arg == "--upper_bound")
         {
@@ -166,29 +167,25 @@ BCPSolver::ProgramConfig BCPSolver::ArgParser::parse(int argc, char *argv[])
             {
                 try
                 {
-                    config.upper_bound = std::stoi(argv[++i]); // Increment i to consume value
+                    config.upper_bound = std::stoi(argv[++i]);
                     if (config.upper_bound < 0)
-                    {
-                        throw std::invalid_argument("Invalid integer for upper_bound: " + std::string(argv[i]));
-                    }
+                        throw std::exception();
                 }
-                catch (const std::exception &)
+                catch (...)
                 {
-                    throw std::invalid_argument("Invalid integer for upper_bound: " + std::string(argv[i]));
+                    throw std::invalid_argument("Invalid upper_bound: " + std::string(argv[i]));
                 }
             }
             else
-            {
-                throw std::invalid_argument("Missing value for upper bound flag");
-            }
+                throw std::invalid_argument("Missing value for upper bound");
         }
         else if (arg == "--no-optimal")
         {
-            config.find_optimal = false; // Flag to disable
+            config.find_optimal = false;
         }
         else if (arg == "-i" || arg == "--incremental")
         {
-            config.incremental_mode = true; // Flag to enable
+            config.incremental_mode = true;
         }
         else if (arg[0] == '-')
         {
@@ -196,20 +193,49 @@ BCPSolver::ProgramConfig BCPSolver::ArgParser::parse(int argc, char *argv[])
         }
         else
         {
-            // Parse filename (first non-flag argument)
-            if (filenameFound)
+            // Logic for Positional Arguments
+            if (!filenameFound)
             {
-                throw std::invalid_argument("Multiple filenames provided or invalid argument order: " + arg);
+                config.filename = arg;
+                filenameFound = true;
             }
-            config.filename = arg;
-            filenameFound = true;
+            else if (!methodFound)
+            {
+                if (arg == "one-var-greater")
+                {
+                    config.solving_method = OneVariableGreater;
+                }
+                else if (arg == "two-vars-greater")
+                {
+                    config.solving_method = TwoVariablesGreater;
+                }
+                else if (arg == "one-var-less")
+                {
+                    config.solving_method = OneVariableLess;
+                }
+                else if (arg == "two-vars-less")
+                {
+                    config.solving_method = TwoVariablesLess;
+                }
+                else
+                {
+                    throw std::invalid_argument(
+                        "Invalid method: " + arg +
+                        ". Expected 'one-var-greater', 'one-var-less','two-vars-greater', 'two-vars-less'.");
+                }
+                methodFound = true;
+            }
+            else
+            {
+                throw std::invalid_argument("Unexpected extra argument: " + arg);
+            }
         }
     }
 
     if (!filenameFound)
-    {
-        throw std::runtime_error("Missing compulsory argument: filename");
-    }
+        throw std::runtime_error("Missing compulsory argument: <filename>");
+    if (!methodFound)
+        throw std::runtime_error("Missing compulsory argument: <method>");
 
     return config;
 }
