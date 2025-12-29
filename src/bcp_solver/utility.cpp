@@ -8,21 +8,21 @@
 #include <iostream>
 #include <sstream>
 
-void BCPSolver::Graph::add_edge(const int i, const int j, const int w) const
+void BCPSolver::Graph::add_edge(const int i, const int j, const int w)
 {
-    edges_list->emplace_back(i, j, w);
-    (*matrix)[i][j] = w;
-    (*matrix)[j][i] = w;
+    edges_list.emplace_back(i, j, w);
+    matrix[i][j] = w;
+    matrix[j][i] = w;
 }
 
-const std::vector<std::tuple<int, int, int>> *BCPSolver::Graph::get_edges() const
+const std::vector<std::tuple<int, int, int>>& BCPSolver::Graph::get_edges() const
 {
     return edges_list;
 }
 
 int BCPSolver::Graph::get_weight(int i, int j) const
 {
-    return (*matrix)[i][j];
+    return matrix[i][j];
 }
 
 int BCPSolver::Graph::get_number_of_nodes() const
@@ -32,7 +32,7 @@ int BCPSolver::Graph::get_number_of_nodes() const
 
 int BCPSolver::Graph::get_number_of_edges() const
 {
-    return static_cast<int>(edges_list->size());
+    return static_cast<int>(edges_list.size());
 }
 
 int BCPSolver::Graph::get_highest_degree_vertex() const
@@ -44,7 +44,7 @@ int BCPSolver::Graph::get_highest_degree_vertex() const
 
     std::vector degrees(n, 0);
 
-    for (const auto &edge : *edges_list)
+    for (const auto& edge : edges_list)
     {
         degrees[std::get<0>(edge)]++;
         degrees[std::get<1>(edge)]++;
@@ -65,7 +65,7 @@ int BCPSolver::Graph::get_highest_degree_vertex() const
     return max_vertex;
 }
 
-BCPSolver::Graph *BCPSolver::read_bcp_graph(const std::string &file_path)
+BCPSolver::Graph* BCPSolver::read_bcp_graph(const std::string& file_path)
 {
     std::ifstream file(file_path);
     if (!file.is_open())
@@ -74,7 +74,7 @@ BCPSolver::Graph *BCPSolver::read_bcp_graph(const std::string &file_path)
         return nullptr;
     }
 
-    Graph *g = nullptr;
+    Graph* g = nullptr;
     std::string line;
 
     while (std::getline(file, line))
@@ -113,22 +113,22 @@ BCPSolver::Graph *BCPSolver::read_bcp_graph(const std::string &file_path)
     return g;
 }
 
-void BCPSolver::ArgParser::printUsage(const char *programName)
+void BCPSolver::ArgParser::printUsage(const char* programName)
 {
     std::cerr << "Usage: " << programName << " <filename> <method> [options]\n"
-              << "Arguments:\n"
-              << "  <filename>                   Path to the input file\n"
-              << "  <method>                     Method for solving: 'one-var-greater', "
-                 "'one-var-less','two-vars-greater', 'two-vars-less'\n\n"
-              << "Options:\n"
-              << "  -t, --time_limit <int>       Set time limit\n"
-              << "  -ub, --upper_bound <int>     Set preferred upper bound\n"
-              << "  --no-optimal                 Disable finding optimal value\n"
-              << "  -i, --incremental            Enable incremental mode\n"
-              << "  -h, --help                   Show this help message\n";
+        << "Arguments:\n"
+        << "  <filename>                   Path to the input file\n"
+        << "  <method>                     Method for solving: 'one-var-greater', "
+        "'one-var-less','two-vars-greater', 'two-vars-less'\n\n"
+        << "Options:\n"
+        << "  -t, --time_limit <int>       Set time limit\n"
+        << "  -ub, --upper_bound <int>     Set preferred upper bound\n"
+        << "  --no-optimal                 Disable finding optimal value\n"
+        << "  -i, --incremental            Enable incremental mode\n"
+        << "  -h, --help                   Show this help message\n";
 }
 
-BCPSolver::ProgramConfig BCPSolver::ArgParser::parse(int argc, char *argv[])
+BCPSolver::ProgramConfig BCPSolver::ArgParser::parse(int argc, char* argv[])
 {
     ProgramConfig config;
     bool filenameFound = false;

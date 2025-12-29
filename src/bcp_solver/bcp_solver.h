@@ -12,80 +12,54 @@
 
 namespace BCPSolver
 {
+    class BCPSolver
+    {
+    protected:
+        const Graph* graph{};
+        int upper_bound{};
+        int lower_bound{};
 
-class BCPSolver
-{
-  private:
-    const Graph *graph{};
-    int upper_bound{};
-    int lower_bound{};
+        SATSolver::SatSolver sat_solver{SATSolver::SatSolver()};
+        SolverStatus status{UNKNOWN};
 
-    SATSolver::SatSolver *sat_solver{new SATSolver::SatSolver()};
-    SolverStatus status{UNKNOWN};
+        double encoding_time{};
 
-    int span{};
+        void calculate_upper_bound();
 
-    double encoding_time{};
+        // Vertex u has color i
+        std::map<std::pair<int, int>, int> x{};
+        // Vertex u has color greater or equal to i || Vertex u has color less or equal to i
+        std::map<std::pair<int, int>, int> y{};
 
-    SolvingMethod method{};
+        int span{};
 
-    // Vertex u has color i
-    std::map<std::pair<int, int>, int> *x{};
-    // Vertex u has color greater or equal to i || Vertex u has color less or equal to i
-    std::map<std::pair<int, int>, int> *y{};
+        virtual void create_variable() =0;
 
-    void calculate_upper_bound();
+        virtual void encode() =0;
 
-    void create_variable();
+        virtual std::vector<int>* create_assumptions() =0;
 
-    void encode();
+        explicit BCPSolver(const Graph* graph, int upper_bound = -1);
 
-    void one_variable_greater_first_constraint() const;
+    public:
+        BCPSolver(const BCPSolver& other) = delete;
+        void operator=(const BCPSolver&) = delete;
 
-    void one_variable_greater_second_constraint() const;
+        virtual ~BCPSolver() = default;
 
-    void one_variable_greater_third_constraint() const;
+        static BCPSolver* create_solver(SolvingMethod method, const Graph* graph, int upper_bound = -1);
 
-    void one_variable_less_first_constraint() const;
+        SolverStatus non_optimal_solving(double time_limit);
 
-    void one_variable_less_second_constraint() const;
+        SolverStatus optimal_solving_non_incremental(double time_limit);
+        SolverStatus optimal_solving_incremental(double time_limit);
 
-    void one_variable_less_third_constraint() const;
+        SolverStatus solve(double time_limit = NO_TIME_LIMIT, bool find_optimal = false, bool incremental = false);
 
-    void two_variables_greater_first_constraint() const;
+        [[nodiscard]] int get_span() const;
 
-    void two_variables_greater_second_constraint() const;
-
-    void two_variables_greater_third_constraint() const;
-
-    void two_variables_greater_fourth_constraint() const;
-
-    void two_variables_less_first_constraint() const;
-
-    void two_variables_less_second_constraint() const;
-
-    void two_variables_less_third_constraint() const;
-
-    void two_variables_less_fourth_constraint() const;
-
-    void symmetry_breaking() const;
-
-  public:
-    explicit BCPSolver(SolvingMethod method, const Graph *graph, int upper_bound = -1);
-
-    ~BCPSolver();
-    SolverStatus non_optimal_solving(double time_limit);
-
-    SolverStatus optimal_solving_non_incremental(double time_limit);
-    SolverStatus optimal_solving_incremental(double time_limit);
-
-    SolverStatus solve(double time_limit = NO_TIME_LIMIT, bool find_optimal = false, bool incremental = false);
-
-    [[nodiscard]] int get_span() const;
-
-    [[nodiscard]] std::unordered_map<std::string, double> get_statistics() const;
-};
-
+        [[nodiscard]] std::unordered_map<std::string, double> get_statistics() const;
+    };
 } // namespace BCPSolver
 
 #endif // BCP_BMCP_BCP_SOLVER_H

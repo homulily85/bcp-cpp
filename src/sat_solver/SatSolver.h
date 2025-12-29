@@ -22,7 +22,7 @@ class SatSolver
     int number_of_clauses{};
     int number_of_variables{};
     CaDiCaL::Solver *solver{new CaDiCaL::Solver()};
-    std::vector<int> *last_feasible_model{};
+    std::vector<int> last_feasible_model{};
     int status{};
     double time_accum{};
 

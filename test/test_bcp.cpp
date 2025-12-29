@@ -13,7 +13,7 @@ TEST(OneVariableGreaterEncodingTest, TestGEOM20NonOptimal)
     {
         exit(1);
     }
-    auto *s = new BCPSolver::BCPSolver(BCPSolver::OneVariableGreater, g, dummyUpperBound);
+    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableGreater, g, dummyUpperBound);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, false, false);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::SATISFIABLE);
@@ -30,7 +30,7 @@ TEST(OneVariableGreaterEncodingTest, TestGEOM20NonIncrementalOptimal)
     {
         exit(1);
     }
-    auto *s = new BCPSolver::BCPSolver(BCPSolver::OneVariableGreater, g);
+    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableGreater, g);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
@@ -47,7 +47,7 @@ TEST(OneVariableGreaterEncodingTest, TestGEOM20UsingIncrementalOptimal)
     {
         exit(1);
     }
-    auto *s = new BCPSolver::BCPSolver(BCPSolver::OneVariableGreater, g);
+    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableGreater, g);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
@@ -64,7 +64,7 @@ TEST(OneVariableGreaterEncodingTest, TestGEOM20aNonIncrementalOptimal)
     {
         exit(1);
     }
-    auto *s = new BCPSolver::BCPSolver(BCPSolver::OneVariableGreater, g);
+    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableGreater, g);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
@@ -81,7 +81,7 @@ TEST(OneVariableGreaterEncodingTest, TestGEOM20aIncrementalOptimal)
     {
         exit(1);
     }
-    auto *s = new BCPSolver::BCPSolver(BCPSolver::OneVariableGreater, g);
+    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableGreater, g);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
@@ -98,7 +98,7 @@ TEST(OneVariableGreaterEncodingTest, TestGEOM20bNonIncrementalOptimal)
     {
         exit(1);
     }
-    auto *s = new BCPSolver::BCPSolver(BCPSolver::OneVariableGreater, g);
+    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableGreater, g);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
@@ -115,7 +115,7 @@ TEST(OneVariableGreaterEncodingTest, TestGEOM20bIncrementalOptimal)
     {
         exit(1);
     }
-    auto *s = new BCPSolver::BCPSolver(BCPSolver::OneVariableGreater, g);
+    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableGreater, g);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
@@ -133,7 +133,7 @@ TEST(TwoVariableGreaterEncodingTest, TestGEOM20NonOptimal)
     {
         exit(1);
     }
-    auto *s = new BCPSolver::BCPSolver(BCPSolver::TwoVariablesGreater, g, dummyUpperBound);
+    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesGreater, g, dummyUpperBound);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, false, false);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::SATISFIABLE);
@@ -150,7 +150,7 @@ TEST(TwoVariableGreaterEncodingTest, TestGEOM20NonIncrementalOptimal)
     {
         exit(1);
     }
-    auto *s = new BCPSolver::BCPSolver(BCPSolver::TwoVariablesGreater, g);
+    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesGreater, g);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
@@ -167,7 +167,7 @@ TEST(TwoVariableGreaterEncodingTest, TestGEOM20UsingIncrementalOptimal)
     {
         exit(1);
     }
-    auto *s = new BCPSolver::BCPSolver(BCPSolver::TwoVariablesGreater, g);
+    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesGreater, g);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
@@ -184,7 +184,7 @@ TEST(TwoVariableGreaterEncodingTest, TestGEOM20aNonIncrementalOptimal)
     {
         exit(1);
     }
-    auto *s = new BCPSolver::BCPSolver(BCPSolver::TwoVariablesGreater, g);
+    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesGreater, g);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
@@ -201,7 +201,7 @@ TEST(TwoVariableGreaterEncodingTest, TestGEOM20aIncrementalOptimal)
     {
         exit(1);
     }
-    auto *s = new BCPSolver::BCPSolver(BCPSolver::TwoVariablesGreater, g);
+    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesGreater, g);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
@@ -218,7 +218,7 @@ TEST(TwoVariableGreaterEncodingTest, TestGEOM20bNonIncrementalOptimal)
     {
         exit(1);
     }
-    auto *s = new BCPSolver::BCPSolver(BCPSolver::TwoVariablesGreater, g);
+    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesGreater, g);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
@@ -235,7 +235,7 @@ TEST(TwoVariableGreaterEncodingTest, TestGEOM20bIncrementalOptimal)
     {
         exit(1);
     }
-    auto *s = new BCPSolver::BCPSolver(BCPSolver::TwoVariablesGreater, g);
+    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesGreater, g);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
@@ -253,7 +253,7 @@ TEST(TwoVariableLessEncodingTest, TestGEOM20NonOptimal)
     {
         exit(1);
     }
-    auto *s = new BCPSolver::BCPSolver(BCPSolver::TwoVariablesLess, g, dummyUpperBound);
+    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesLess, g, dummyUpperBound);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, false, false);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::SATISFIABLE);
@@ -270,7 +270,7 @@ TEST(TwoVariableLessEncodingTest, TestGEOM20NonIncrementalOptimal)
     {
         exit(1);
     }
-    auto *s = new BCPSolver::BCPSolver(BCPSolver::TwoVariablesLess, g);
+    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesLess, g);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
@@ -287,7 +287,7 @@ TEST(TwoVariableLessEncodingTest, TestGEOM20UsingIncrementalOptimal)
     {
         exit(1);
     }
-    auto *s = new BCPSolver::BCPSolver(BCPSolver::TwoVariablesLess, g);
+    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesLess, g);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
@@ -304,7 +304,7 @@ TEST(TwoVariableLessEncodingTest, TestGEOM20aNonIncrementalOptimal)
     {
         exit(1);
     }
-    auto *s = new BCPSolver::BCPSolver(BCPSolver::TwoVariablesLess, g);
+    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesLess, g);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
@@ -321,7 +321,7 @@ TEST(TwoVariableLessEncodingTest, TestGEOM20aIncrementalOptimal)
     {
         exit(1);
     }
-    auto *s = new BCPSolver::BCPSolver(BCPSolver::TwoVariablesLess, g);
+    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesLess, g);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
@@ -338,7 +338,7 @@ TEST(TwoVariableLessEncodingTest, TestGEOM20bNonIncrementalOptimal)
     {
         exit(1);
     }
-    auto *s = new BCPSolver::BCPSolver(BCPSolver::TwoVariablesLess, g);
+    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesLess, g);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
@@ -355,7 +355,7 @@ TEST(TwoVariableLessEncodingTest, TestGEOM20bIncrementalOptimal)
     {
         exit(1);
     }
-    auto *s = new BCPSolver::BCPSolver(BCPSolver::TwoVariablesLess, g);
+    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesLess, g);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
@@ -373,7 +373,7 @@ TEST(OneVariableLessEncodingTest, TestGEOM20NonOptimal)
     {
         exit(1);
     }
-    auto *s = new BCPSolver::BCPSolver(BCPSolver::OneVariableLess, g, dummyUpperBound);
+    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableLess, g, dummyUpperBound);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, false, false);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::SATISFIABLE);
@@ -390,7 +390,7 @@ TEST(OneVariableLessEncodingTest, TestGEOM20NonIncrementalOptimal)
     {
         exit(1);
     }
-    auto *s = new BCPSolver::BCPSolver(BCPSolver::OneVariableLess, g);
+    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableLess, g);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
@@ -407,7 +407,7 @@ TEST(OneVariableLessEncodingTest, TestGEOM20UsingIncrementalOptimal)
     {
         exit(1);
     }
-    auto *s = new BCPSolver::BCPSolver(BCPSolver::OneVariableLess, g);
+    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableLess, g);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
@@ -424,7 +424,7 @@ TEST(OneVariableLessEncodingTest, TestGEOM20aNonIncrementalOptimal)
     {
         exit(1);
     }
-    auto *s = new BCPSolver::BCPSolver(BCPSolver::OneVariableLess, g);
+    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableLess, g);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
@@ -441,7 +441,7 @@ TEST(OneVariableLessEncodingTest, TestGEOM20aIncrementalOptimal)
     {
         exit(1);
     }
-    auto *s = new BCPSolver::BCPSolver(BCPSolver::OneVariableLess, g);
+    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableLess, g);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
@@ -458,7 +458,7 @@ TEST(OneVariableLessEncodingTest, TestGEOM20bNonIncrementalOptimal)
     {
         exit(1);
     }
-    auto *s = new BCPSolver::BCPSolver(BCPSolver::OneVariableLess, g);
+    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableLess, g);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
@@ -475,7 +475,7 @@ TEST(OneVariableLessEncodingTest, TestGEOM20bIncrementalOptimal)
     {
         exit(1);
     }
-    auto *s = new BCPSolver::BCPSolver(BCPSolver::OneVariableLess, g);
+    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableLess, g);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
