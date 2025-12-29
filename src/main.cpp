@@ -3,9 +3,6 @@
 #include <iostream>
 #include <string>
 
-// Structure to hold the parsed arguments
-
-
 int main(int argc, char *argv[])
 {
     try
@@ -17,7 +14,7 @@ int main(int argc, char *argv[])
         {
             exit(1);
         }
-        auto *s = new BCPSolver::BCPSolver(g, config.upper_bound);
+        auto *s = BCPSolver::BCPSolver::create_solver(config.solving_method, g, config.upper_bound);
         s->solve(config.time_limit, config.find_optimal, config.incremental_mode);
         for (auto stats = s->get_statistics(); const auto &[fst, snd] : stats)
         {

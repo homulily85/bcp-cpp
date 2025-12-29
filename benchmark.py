@@ -11,6 +11,7 @@ from pathlib import Path
 import pandas as pd
 import psutil
 
+
 def parse_solver_output(output_text):
     data = {}
     for line in output_text.strip().split('\n'):
@@ -22,44 +23,42 @@ def parse_solver_output(output_text):
             except ValueError:
                 data[key.strip()] = val
     return data
-def process_instance(problem_type: str, file_path: str, upper_bound=None, time_limit: int = None,
+
+
+def process_instance(solving_method: str, file_path: str, upper_bound=None, time_limit: int = None,
                      queue: multiprocessing.Queue = None, use_incremental_solving: bool = False):
     """
     Process a single instance of the given path.
     """
     print(f"Solving {file_path}")
     stats = None
-    if problem_type == 'BCP':
-        try:
-            command = ["./bcp", f"{file_path}"]
+    try:
+        command = ["./bcp", f"{file_path}", f"{solving_method}"]
 
-            if upper_bound:
-                command.append("-ub")
-                command.append(str(upper_bound))
+        if upper_bound:
+            command.append("-ub")
+            command.append(str(upper_bound))
 
-            if time_limit:
-                command.append("-t")
-                command.append(str(time_limit))
+        if time_limit:
+            command.append("-t")
+            command.append(str(time_limit))
 
-            if use_incremental_solving:
-                command.append("-i")
+        if use_incremental_solving:
+            command.append("-i")
 
-            result = subprocess.run(
-                command,
-                capture_output=True,
-                text=True,
-                check=True
-            )
+        result = subprocess.run(
+            command,
+            capture_output=True,
+            text=True,
+            check=True
+        )
 
-            stats = parse_solver_output(result.stdout)
+        stats = parse_solver_output(result.stdout)
 
-        except subprocess.CalledProcessError as e:
-            print(f"Command failed with return code {e.returncode}")
-            print(f"Error message: {e.stderr}")
-            exit(1)
-
-    elif problem_type == 'BMCP':
-        raise NotImplementedError()
+    except subprocess.CalledProcessError as e:
+        print(f"Command failed with return code {e.returncode}")
+        print(f"Error message: {e.stderr}")
+        exit(1)
 
     if stats['status'] == -1:
         stats['status'] = 'UNKNOWN'
@@ -72,15 +71,16 @@ def process_instance(problem_type: str, file_path: str, upper_bound=None, time_l
 
     queue.put(stats)
 
+
 def worker(args):
     if len(args) == 4:
-        problem_type, file_path, time_limit, use_incremental_solving = args
+        solving_method, file_path, time_limit, use_incremental_solving = args
         upper_bound = None
     else:
-        problem_type, file_path, upper_bound, time_limit, use_incremental_solving = args
+        solving_method, file_path, upper_bound, time_limit, use_incremental_solving = args
 
     queue = multiprocessing.Queue()
-    p = multiprocessing.Process(target=process_instance, kwargs={'problem_type': problem_type,
+    p = multiprocessing.Process(target=process_instance, kwargs={'solving_method': solving_method,
                                                                  'file_path': file_path,
                                                                  'upper_bound': upper_bound,
                                                                  'time_limit': time_limit,
@@ -115,7 +115,7 @@ def worker(args):
     return instance_stats
 
 
-def benchmark(problem_type: str, time_limit: int = None, continue_from: str = None,
+def benchmark(solving_method: str, time_limit: int = None, continue_from: str = None,
               num_concurrent_processes: int = 1, save_interval_seconds: int = 60,
               use_predefine_upper_bound: bool = False, use_incremental_solving: bool = False):
     """
@@ -134,13 +134,13 @@ def benchmark(problem_type: str, time_limit: int = None, continue_from: str = No
     tasks = []
 
     if use_predefine_upper_bound:
-        bound = pd.read_csv(f'./bound/bound_{problem_type}.csv')
+        bound = pd.read_csv(f'./bound/bound_{solving_method}.csv')
         for row in bound.itertuples():
             if row.name in dataset_stats['name'].values:
                 continue
 
             tasks.append((
-                problem_type,
+                solving_method,
                 f'./dataset/{row.name}',
                 row.upper_bound,
                 time_limit,
@@ -153,7 +153,7 @@ def benchmark(problem_type: str, time_limit: int = None, continue_from: str = No
         for file in files:
             if file in dataset_stats['name'].values:
                 continue
-            tasks.append((problem_type, f'{folder_path}/{file}', time_limit, use_incremental_solving))
+            tasks.append((solving_method, f'{folder_path}/{file}', time_limit, use_incremental_solving))
 
     executor = concurrent.futures.ProcessPoolExecutor(max_workers=num_concurrent_processes)
     futures = []
@@ -174,28 +174,28 @@ def benchmark(problem_type: str, time_limit: int = None, continue_from: str = No
                 # Periodically save partial results
                 current_time = time.time()
                 if current_time - last_save_time >= save_interval_seconds:
-                    export_result(problem_type, dataset_stats, suffix="partial")
+                    export_result(solving_method, dataset_stats, use_incremental_solving, suffix="partial")
                     last_save_time = current_time
 
             except Exception:
                 for f in futures:
                     f.cancel()
                 executor.shutdown(wait=False, cancel_futures=True)
-                export_result(problem_type, dataset_stats, suffix="crash")
+                export_result(solving_method, dataset_stats, use_incremental_solving, suffix="crash")
                 sys.exit(1)
 
     except KeyboardInterrupt:
         for f in futures:
             f.cancel()
         executor.shutdown(wait=False, cancel_futures=True)
-        export_result(problem_type, dataset_stats, suffix="interrupted")
+        export_result(solving_method, dataset_stats, use_incremental_solving, suffix="interrupted")
         sys.exit(1)
 
     # Final export at the end
-    export_result(problem_type, dataset_stats)
+    export_result(solving_method, dataset_stats, use_incremental_solving)
 
 
-def export_result(problem_type: str, stat, suffix=None):
+def export_result(solving_method: str, stat, use_incremental_solving, suffix=None):
     """
     Export both detailed results and summary reports.
     `suffix` is appended to the filename to indicate partial or crash saves.
@@ -204,8 +204,12 @@ def export_result(problem_type: str, stat, suffix=None):
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
     suffix = f"_{suffix}" if suffix else ""
 
-    result_path = f'./result/{problem_type}{suffix}_{timestamp}.csv'
-    report_path = f'./result/report_{problem_type}{suffix}_{timestamp}.csv'
+    if use_incremental_solving:
+        result_path = f'./result/BCP_{solving_method}_incremental_{suffix}_{timestamp}.csv'
+        report_path = f'./result/report_BCP_{solving_method}_incremental_{suffix}_{timestamp}.csv'
+    else:
+        result_path = f'./result/BCP_{solving_method}_non_incremental_{suffix}_{timestamp}.csv'
+        report_path = f'./result/report_BCP_{solving_method}_non_incremental_{suffix}_{timestamp}.csv'
 
     stat.to_csv(result_path, index=False)
 
@@ -232,7 +236,9 @@ def export_result(problem_type: str, stat, suffix=None):
 
 def main():
     parser = argparse.ArgumentParser(description='Benchmarking script for BCP solver.')
-    parser.add_argument('problem_type', type=str, choices=['BCP', 'BMCP'], )
+    parser.add_argument('solving_method', type=str,
+                        choices=['one-var-less', 'one-var-greater', 'two-vars-less', 'two-vars-greater'],
+                        help="Method for solving: 'one-var' or 'two-vars'")
     parser.add_argument('--time_limit', type=int, help='Time limit for solving one instance.',
                         default=None)
     parser.add_argument('--continue_from', type=str, help='Result file name to continue from.',
@@ -248,7 +254,7 @@ def main():
 
     args = parser.parse_args()
 
-    benchmark(args.problem_type, args.time_limit, args.continue_from,
+    benchmark(args.solving_method, args.time_limit, args.continue_from,
               args.num_concurrent_processes, args.save_interval_seconds, args.use_predefined_upper_bound,
               args.use_incremental_solving)
 

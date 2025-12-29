@@ -10,12 +10,10 @@
 SATSolver::SatSolver::~SatSolver()
 {
     delete solver;
-    delete last_feasible_model;
 }
 
 int SATSolver::SatSolver::create_new_variable()
 {
-    // return solver->declare_one_more_variable();
     number_of_variables++;
     return number_of_variables;
 }
