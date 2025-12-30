@@ -12,6 +12,7 @@
 
 #include "method/OneVarGreaterMethod.h"
 #include "method/OneVarLessMethod.h"
+#include "method/StaircaseWithAuxiliaryVarsMethod.h"
 #include "method/TwoVarsGreaterMethod.h"
 #include "method/TwoVarsLessMethod.h"
 
@@ -122,7 +123,10 @@ void BCPSolver::BCPSolver::calculate_upper_bound()
     upper_bound = max_color;
 }
 
-BCPSolver::BCPSolver::BCPSolver(const Graph* graph, const int upper_bound) : graph(graph), upper_bound(upper_bound)
+
+BCPSolver::BCPSolver::BCPSolver(const Graph* graph, const int upper_bound, const bool use_symmetry_breaking,
+                                const bool use_heuristic)
+    : graph(graph), upper_bound(upper_bound), use_symmetry_breaking(use_symmetry_breaking), use_heuristic(use_heuristic)
 {
     if (this->upper_bound < 0)
     {
@@ -132,63 +136,24 @@ BCPSolver::BCPSolver::BCPSolver(const Graph* graph, const int upper_bound) : gra
     span = this->upper_bound;
 }
 
-// void BCPSolver::BCPSolver::encode()
-// {
-//     const auto start_time = std::chrono::high_resolution_clock::now();
-//
-//     create_variable();
-//
-//     symmetry_breaking();
-//
-//     switch (method)
-//     {
-//     case TwoVariablesGreater:
-//         two_variables_greater_first_constraint();
-//         two_variables_greater_second_constraint();
-//         two_variables_greater_third_constraint();
-//         two_variables_greater_fourth_constraint();
-//         break;
-//
-//     case TwoVariablesLess:
-//         two_variables_less_first_constraint();
-//         two_variables_less_second_constraint();
-//         two_variables_less_third_constraint();
-//         two_variables_less_fourth_constraint();
-//         break;
-//
-//     case OneVariableGreater:
-//         one_variable_greater_first_constraint();
-//         one_variable_greater_second_constraint();
-//         one_variable_greater_third_constraint();
-//         break;
-//
-//     case OneVariableLess:
-//         one_variable_less_first_constraint();
-//         one_variable_less_second_constraint();
-//         one_variable_less_third_constraint();
-//         break;
-//
-//     default:
-//         throw std::invalid_argument("Invalid solving method");
-//     }
-//
-//     encoding_time += std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - start_time).count();
-// }
-
-
-BCPSolver::BCPSolver* BCPSolver::BCPSolver::create_solver(const SolvingMethod method, const Graph* graph,
-                                                          int upper_bound)
+BCPSolver::BCPSolver* BCPSolver::BCPSolver::create_solver(const SolvingMethod method,
+                                                          const Graph* graph,
+                                                          const int upper_bound,
+                                                          const bool use_symmetry_breaking,
+                                                          const bool use_heuristic)
 {
     switch (method)
     {
     case TwoVariablesGreater:
-        return new TwoVarsGreaterMethod(graph, upper_bound);
+        return new TwoVarsGreaterMethod(graph, upper_bound, use_symmetry_breaking, use_heuristic);
     case TwoVariablesLess:
-        return new TwoVarsLessMethod(graph, upper_bound);
+        return new TwoVarsLessMethod(graph, upper_bound, use_symmetry_breaking, use_heuristic);
     case OneVariableGreater:
-        return new OneVarGreaterMethod(graph, upper_bound);
+        return new OneVarGreaterMethod(graph, upper_bound, use_symmetry_breaking, use_heuristic);
     case OneVariableLess:
-        return new OneVarLessMethod(graph, upper_bound);
+        return new OneVarLessMethod(graph, upper_bound, use_symmetry_breaking, use_heuristic);
+    case StaircaseWithAuxiliaryVars:
+        return new StaircaseWithAuxiliaryVarsMethod(graph, upper_bound, use_symmetry_breaking, use_heuristic);
     default:
         throw std::invalid_argument("Invalid solving method");
     }

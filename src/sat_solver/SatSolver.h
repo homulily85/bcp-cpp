@@ -16,50 +16,52 @@ static constexpr double NO_TIME_LIMIT = std::numeric_limits<double>::lowest();
 
 namespace SATSolver
 {
-class SatSolver
-{
-  private:
-    int number_of_clauses{};
-    int number_of_variables{};
-    CaDiCaL::Solver *solver{new CaDiCaL::Solver()};
-    std::vector<int> last_feasible_model{};
-    int status{};
-    double time_accum{};
-
-    class AtomicTerminator final : public CaDiCaL::Terminator
+    class SatSolver
     {
-      public:
-        std::atomic<bool> force_terminate{false};
-        bool terminate() override
+    private:
+        int number_of_clauses{};
+        int number_of_variables{};
+        CaDiCaL::Solver* solver{new CaDiCaL::Solver()};
+        std::vector<int> last_feasible_model{};
+        int status{};
+        double time_accum{};
+
+        class AtomicTerminator final : public CaDiCaL::Terminator
         {
-            return force_terminate.load(std::memory_order_relaxed);
-        }
+        public:
+            std::atomic<bool> force_terminate{false};
+
+            bool terminate() override
+            {
+                return force_terminate.load(std::memory_order_relaxed);
+            }
+        };
+
+    public:
+        SatSolver() = default;
+
+        ~SatSolver();
+
+        [[nodiscard]] int create_new_variable();
+
+        void add_clause(const std::vector<int>& clause);
+
+        void add_clause(int l);
+
+        void add_clause(int l1, int l2);
+
+        void add_clause(int l1, int l2, int l3);
+
+        void add_clause(int l1, int l2, int l3, int l4);
+
+        int solve(const std::vector<int>* assumptions = nullptr, double time_limit = NO_TIME_LIMIT);
+
+        [[nodiscard]] std::unordered_map<std::string, double> get_statistics() const;
+
+        void reset();
+
+        void encode_equals_k(const std::vector<int>& vars, int k);
     };
-
-  public:
-    SatSolver() = default;
-
-    ~SatSolver();
-
-    [[nodiscard]] int create_new_variable();
-
-    void add_clause(const std::vector<int> &clause);
-
-    void add_clause(int l);
-
-    void add_clause(int l1, int l2);
-
-    void add_clause(int l1, int l2, int l3);
-
-    void add_clause(int l1, int l2, int l3, int l4);
-
-    int solve(const std::vector<int> *assumptions = nullptr, double time_limit = NO_TIME_LIMIT);
-
-    [[nodiscard]] std::unordered_map<std::string, double> get_statistics() const;
-
-    void reset();
-};
-
 } // namespace SATSolver
 
 #endif // BCP_BMCP_SATSOLVER_H

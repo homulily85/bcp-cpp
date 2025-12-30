@@ -12,7 +12,6 @@ namespace BCPSolver
     class OneVarLessMethod : public BCPSolver
     {
     private:
-
         void symmetry_breaking();
 
         void first_constraint();
@@ -27,11 +26,17 @@ namespace BCPSolver
 
         std::vector<int>* create_assumptions() override;
 
-    protected:
         friend class BCPSolver;
 
-        explicit OneVarLessMethod(const Graph* graph, const int upper_bound = -1) : BCPSolver(graph, upper_bound)
+        explicit OneVarLessMethod(const Graph* graph, const int upper_bound,
+                                  const bool use_symmetry_breaking,
+                                  const bool use_heuristic) : BCPSolver(
+            graph, upper_bound, use_symmetry_breaking, use_heuristic)
         {
+            if (use_heuristic)
+            {
+                throw std::runtime_error("Heuristic is not supported in OneVarGreaterMethod.");
+            }
         }
     };
 }

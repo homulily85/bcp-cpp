@@ -1,0 +1,62 @@
+//
+// Created by homulily85 on 12/30/25.
+//
+
+#ifndef BCP_STAIRCASEWITHAUXILIARYVARSMETHOD_H
+#define BCP_STAIRCASEWITHAUXILIARYVARSMETHOD_H
+#include "bcp_solver/bcp_solver.h"
+
+namespace BCPSolver
+{
+    class StaircaseWithAuxiliaryVarsMethod : public BCPSolver
+    {
+    private:
+        std::map<std::tuple<int, int, int>, int> staircase_aux_vars{};
+        std::vector<int> max_weight{std::vector(graph->get_number_of_nodes(), 0)};
+
+        void symmetry_breaking();
+
+        void first_constraint();
+
+        void second_constraint();
+
+        void encode() override;
+
+        void create_variable() override;
+
+        std::vector<int>* create_assumptions() override;
+
+        friend class BCPSolver;
+
+        explicit StaircaseWithAuxiliaryVarsMethod(const Graph* graph, const int upper_bound,
+                                                  const bool use_symmetry_breaking,
+                                                  const bool use_heuristic) : BCPSolver(
+            graph, upper_bound, use_symmetry_breaking, use_heuristic)
+        {
+        }
+
+        int get_aux_var_for_staircase(int node, int start, int end);
+
+        void encode_staircase_block(int node, int block_start, int block_end, int width);
+
+        void encode_window(int node, int window_index, int n, int width);
+
+        void glue_window(int node, int window_index, int n, int width);
+
+        static std::vector<std::pair<int, int>> group_range(int n, int k);
+
+        static std::vector<std::pair<int, int>> split_range_by_groups(int a, int b, int k);
+
+        static int find_group_bound(int a, int b, int k, int r);
+
+        std::vector<int>
+        create_aux_var_for_groups_backward(int node, const std::vector<std::pair<int, int>>& group, int bound);
+        std::vector<int>
+        create_aux_var_for_groups_forward(int node, const std::vector<std::pair<int, int>>& group, int bound);
+
+        std::vector<int> get_var_for_groups(int node, const std::vector<std::pair<int, int>>& group);
+    };
+}
+
+
+#endif //BCP_STAIRCASEWITHAUXILIARYVARSMETHOD_H

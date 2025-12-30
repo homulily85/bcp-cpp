@@ -5,15 +5,15 @@
 #include "bcp_solver/bcp_solver.h"
 #include <gtest/gtest.h>
 
-TEST(OneVariableGreaterEncodingTest, TestGEOM20NonOptimal)
+TEST(OneVariableGreaterEncodingTest, TestGEOM20NonOptimalWithoutAnything)
 {
-    auto *g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
     constexpr auto dummyUpperBound = 100;
     if (g == nullptr)
     {
         exit(1);
     }
-    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableGreater, g, dummyUpperBound);
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableGreater, g, dummyUpperBound, false, false);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, false, false);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::SATISFIABLE);
@@ -23,117 +23,15 @@ TEST(OneVariableGreaterEncodingTest, TestGEOM20NonOptimal)
     delete g;
 }
 
-TEST(OneVariableGreaterEncodingTest, TestGEOM20NonIncrementalOptimal)
+TEST(OneVariableGreaterEncodingTest, TestGEOM20NonOptimalWithSymetryBreaking)
 {
-    auto *g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
-    if (g == nullptr)
-    {
-        exit(1);
-    }
-    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableGreater, g);
-    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
-    const auto span = s->get_span();
-    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
-    EXPECT_EQ(span, 21);
-
-    delete s;
-    delete g;
-}
-
-TEST(OneVariableGreaterEncodingTest, TestGEOM20UsingIncrementalOptimal)
-{
-    auto *g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
-    if (g == nullptr)
-    {
-        exit(1);
-    }
-    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableGreater, g);
-    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
-    const auto span = s->get_span();
-    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
-    EXPECT_EQ(span, 21);
-
-    delete s;
-    delete g;
-}
-
-TEST(OneVariableGreaterEncodingTest, TestGEOM20aNonIncrementalOptimal)
-{
-    auto *g = BCPSolver::read_bcp_graph("../dataset/GEOM20a.col");
-    if (g == nullptr)
-    {
-        exit(1);
-    }
-    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableGreater, g);
-    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
-    const auto span = s->get_span();
-    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
-    EXPECT_EQ(span, 20);
-
-    delete s;
-    delete g;
-}
-
-TEST(OneVariableGreaterEncodingTest, TestGEOM20aIncrementalOptimal)
-{
-    auto *g = BCPSolver::read_bcp_graph("../dataset/GEOM20a.col");
-    if (g == nullptr)
-    {
-        exit(1);
-    }
-    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableGreater, g);
-    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
-    const auto span = s->get_span();
-    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
-    EXPECT_EQ(span, 20);
-
-    delete s;
-    delete g;
-}
-
-TEST(OneVariableGreaterEncodingTest, TestGEOM20bNonIncrementalOptimal)
-{
-    auto *g = BCPSolver::read_bcp_graph("../dataset/GEOM20b.col");
-    if (g == nullptr)
-    {
-        exit(1);
-    }
-    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableGreater, g);
-    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
-    const auto span = s->get_span();
-    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
-    EXPECT_EQ(span, 13);
-
-    delete s;
-    delete g;
-}
-
-TEST(OneVariableGreaterEncodingTest, TestGEOM20bIncrementalOptimal)
-{
-    auto *g = BCPSolver::read_bcp_graph("../dataset/GEOM20b.col");
-    if (g == nullptr)
-    {
-        exit(1);
-    }
-    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableGreater, g);
-    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
-    const auto span = s->get_span();
-    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
-    EXPECT_EQ(span, 13);
-
-    delete s;
-    delete g;
-}
-
-TEST(TwoVariableGreaterEncodingTest, TestGEOM20NonOptimal)
-{
-    auto *g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
     constexpr auto dummyUpperBound = 100;
     if (g == nullptr)
     {
         exit(1);
     }
-    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesGreater, g, dummyUpperBound);
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableGreater, g, dummyUpperBound, true, false);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, false, false);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::SATISFIABLE);
@@ -143,14 +41,14 @@ TEST(TwoVariableGreaterEncodingTest, TestGEOM20NonOptimal)
     delete g;
 }
 
-TEST(TwoVariableGreaterEncodingTest, TestGEOM20NonIncrementalOptimal)
+TEST(OneVariableGreaterEncodingTest, TestGEOM20NonIncrementalOptimalWithoutAnything)
 {
-    auto *g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
     if (g == nullptr)
     {
         exit(1);
     }
-    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesGreater, g);
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableGreater, g, -1, false, false);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
@@ -160,14 +58,31 @@ TEST(TwoVariableGreaterEncodingTest, TestGEOM20NonIncrementalOptimal)
     delete g;
 }
 
-TEST(TwoVariableGreaterEncodingTest, TestGEOM20UsingIncrementalOptimal)
+TEST(OneVariableGreaterEncodingTest, TestGEOM20NonIncrementalOptimalWithSymetryBreaking)
 {
-    auto *g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
     if (g == nullptr)
     {
         exit(1);
     }
-    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesGreater, g);
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableGreater, g, -1, true, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 21);
+
+    delete s;
+    delete g;
+}
+
+TEST(OneVariableGreaterEncodingTest, TestGEOM20UsingIncrementalOptimalWithoutAnything)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableGreater, g, -1, false, false);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
@@ -177,14 +92,31 @@ TEST(TwoVariableGreaterEncodingTest, TestGEOM20UsingIncrementalOptimal)
     delete g;
 }
 
-TEST(TwoVariableGreaterEncodingTest, TestGEOM20aNonIncrementalOptimal)
+TEST(OneVariableGreaterEncodingTest, TestGEOM20UsingIncrementalOptimalWithSymetryBreaking)
 {
-    auto *g = BCPSolver::read_bcp_graph("../dataset/GEOM20a.col");
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
     if (g == nullptr)
     {
         exit(1);
     }
-    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesGreater, g);
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableGreater, g, -1, true, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 21);
+
+    delete s;
+    delete g;
+}
+
+TEST(OneVariableGreaterEncodingTest, TestGEOM20aNonIncrementalOptimalWithoutAnything)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20a.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableGreater, g, -1, false, false);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
@@ -194,14 +126,31 @@ TEST(TwoVariableGreaterEncodingTest, TestGEOM20aNonIncrementalOptimal)
     delete g;
 }
 
-TEST(TwoVariableGreaterEncodingTest, TestGEOM20aIncrementalOptimal)
+TEST(OneVariableGreaterEncodingTest, TestGEOM20aNonIncrementalOptimalWithSymetryBreaking)
 {
-    auto *g = BCPSolver::read_bcp_graph("../dataset/GEOM20a.col");
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20a.col");
     if (g == nullptr)
     {
         exit(1);
     }
-    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesGreater, g);
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableGreater, g, -1, true, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 20);
+
+    delete s;
+    delete g;
+}
+
+TEST(OneVariableGreaterEncodingTest, TestGEOM20aIncrementalOptimalWithoutAnything)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20a.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableGreater, g, -1, false, false);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
@@ -211,14 +160,31 @@ TEST(TwoVariableGreaterEncodingTest, TestGEOM20aIncrementalOptimal)
     delete g;
 }
 
-TEST(TwoVariableGreaterEncodingTest, TestGEOM20bNonIncrementalOptimal)
+TEST(OneVariableGreaterEncodingTest, TestGEOM20aIncrementalOptimalWithSymetryBreaking)
 {
-    auto *g = BCPSolver::read_bcp_graph("../dataset/GEOM20b.col");
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20a.col");
     if (g == nullptr)
     {
         exit(1);
     }
-    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesGreater, g);
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableGreater, g, -1, true, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 20);
+
+    delete s;
+    delete g;
+}
+
+TEST(OneVariableGreaterEncodingTest, TestGEOM20bNonIncrementalOptimalWithoutAnything)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20b.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableGreater, g, -1, false, false);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
@@ -228,14 +194,31 @@ TEST(TwoVariableGreaterEncodingTest, TestGEOM20bNonIncrementalOptimal)
     delete g;
 }
 
-TEST(TwoVariableGreaterEncodingTest, TestGEOM20bIncrementalOptimal)
+TEST(OneVariableGreaterEncodingTest, TestGEOM20bNonIncrementalOptimalWithSymetryBreaking)
 {
-    auto *g = BCPSolver::read_bcp_graph("../dataset/GEOM20b.col");
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20b.col");
     if (g == nullptr)
     {
         exit(1);
     }
-    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesGreater, g);
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableGreater, g, -1, true, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 13);
+
+    delete s;
+    delete g;
+}
+
+TEST(OneVariableGreaterEncodingTest, TestGEOM20bIncrementalOptimalWithoutAnything)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20b.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableGreater, g, -1, false, false);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
@@ -245,15 +228,32 @@ TEST(TwoVariableGreaterEncodingTest, TestGEOM20bIncrementalOptimal)
     delete g;
 }
 
-TEST(TwoVariableLessEncodingTest, TestGEOM20NonOptimal)
+TEST(OneVariableGreaterEncodingTest, TestGEOM20bIncrementalOptimalWithSymetryBreaking)
 {
-    auto *g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20b.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableGreater, g, -1, true, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 13);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableGreaterEncodingTest, TestGEOM20NonOptimalWithoutAnything)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
     constexpr auto dummyUpperBound = 100;
     if (g == nullptr)
     {
         exit(1);
     }
-    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesLess, g, dummyUpperBound);
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesGreater, g, dummyUpperBound, false, false);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, false, false);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::SATISFIABLE);
@@ -263,117 +263,15 @@ TEST(TwoVariableLessEncodingTest, TestGEOM20NonOptimal)
     delete g;
 }
 
-TEST(TwoVariableLessEncodingTest, TestGEOM20NonIncrementalOptimal)
+TEST(TwoVariableGreaterEncodingTest, TestGEOM20NonOptimalWithSymetryBreaking)
 {
-    auto *g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
-    if (g == nullptr)
-    {
-        exit(1);
-    }
-    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesLess, g);
-    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
-    const auto span = s->get_span();
-    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
-    EXPECT_EQ(span, 21);
-
-    delete s;
-    delete g;
-}
-
-TEST(TwoVariableLessEncodingTest, TestGEOM20UsingIncrementalOptimal)
-{
-    auto *g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
-    if (g == nullptr)
-    {
-        exit(1);
-    }
-    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesLess, g);
-    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
-    const auto span = s->get_span();
-    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
-    EXPECT_EQ(span, 21);
-
-    delete s;
-    delete g;
-}
-
-TEST(TwoVariableLessEncodingTest, TestGEOM20aNonIncrementalOptimal)
-{
-    auto *g = BCPSolver::read_bcp_graph("../dataset/GEOM20a.col");
-    if (g == nullptr)
-    {
-        exit(1);
-    }
-    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesLess, g);
-    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
-    const auto span = s->get_span();
-    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
-    EXPECT_EQ(span, 20);
-
-    delete s;
-    delete g;
-}
-
-TEST(TwoVariableLessEncodingTest, TestGEOM20aIncrementalOptimal)
-{
-    auto *g = BCPSolver::read_bcp_graph("../dataset/GEOM20a.col");
-    if (g == nullptr)
-    {
-        exit(1);
-    }
-    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesLess, g);
-    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
-    const auto span = s->get_span();
-    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
-    EXPECT_EQ(span, 20);
-
-    delete s;
-    delete g;
-}
-
-TEST(TwoVariableLessEncodingTest, TestGEOM20bNonIncrementalOptimal)
-{
-    auto *g = BCPSolver::read_bcp_graph("../dataset/GEOM20b.col");
-    if (g == nullptr)
-    {
-        exit(1);
-    }
-    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesLess, g);
-    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
-    const auto span = s->get_span();
-    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
-    EXPECT_EQ(span, 13);
-
-    delete s;
-    delete g;
-}
-
-TEST(TwoVariableLessEncodingTest, TestGEOM20bIncrementalOptimal)
-{
-    auto *g = BCPSolver::read_bcp_graph("../dataset/GEOM20b.col");
-    if (g == nullptr)
-    {
-        exit(1);
-    }
-    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesLess, g);
-    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
-    const auto span = s->get_span();
-    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
-    EXPECT_EQ(span, 13);
-
-    delete s;
-    delete g;
-}
-
-TEST(OneVariableLessEncodingTest, TestGEOM20NonOptimal)
-{
-    auto *g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
     constexpr auto dummyUpperBound = 100;
     if (g == nullptr)
     {
         exit(1);
     }
-    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableLess, g, dummyUpperBound);
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesGreater, g, dummyUpperBound, true, false);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, false, false);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::SATISFIABLE);
@@ -383,14 +281,50 @@ TEST(OneVariableLessEncodingTest, TestGEOM20NonOptimal)
     delete g;
 }
 
-TEST(OneVariableLessEncodingTest, TestGEOM20NonIncrementalOptimal)
+TEST(TwoVariableGreaterEncodingTest, TestGEOM20NonOptimalWithHeuristic)
 {
-    auto *g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
+    constexpr auto dummyUpperBound = 100;
     if (g == nullptr)
     {
         exit(1);
     }
-    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableLess, g);
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesGreater, g, dummyUpperBound, false, true);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, false, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::SATISFIABLE);
+    EXPECT_EQ(span, dummyUpperBound);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableGreaterEncodingTest, TestGEOM20NonOptimalWithBoth)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
+    constexpr auto dummyUpperBound = 100;
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesGreater, g, dummyUpperBound, true, true);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, false, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::SATISFIABLE);
+    EXPECT_EQ(span, dummyUpperBound);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableGreaterEncodingTest, TestGEOM20NonIncrementalOptimalWithoutAnything)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesGreater, g, -1, false, false);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
@@ -400,14 +334,65 @@ TEST(OneVariableLessEncodingTest, TestGEOM20NonIncrementalOptimal)
     delete g;
 }
 
-TEST(OneVariableLessEncodingTest, TestGEOM20UsingIncrementalOptimal)
+TEST(TwoVariableGreaterEncodingTest, TestGEOM20NonIncrementalOptimalWithSymetryBreaking)
 {
-    auto *g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
     if (g == nullptr)
     {
         exit(1);
     }
-    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableLess, g);
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesGreater, g, -1, true, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 21);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableGreaterEncodingTest, TestGEOM20NonIncrementalOptimalWithHeuristic)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesGreater, g, -1, false, true);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 21);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableGreaterEncodingTest, TestGEOM20NonIncrementalOptimalWithBoth)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesGreater, g, -1, true, true);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 21);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableGreaterEncodingTest, TestGEOM20UsingIncrementalOptimalWithoutAnything)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesGreater, g, -1, false, false);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
@@ -417,14 +402,65 @@ TEST(OneVariableLessEncodingTest, TestGEOM20UsingIncrementalOptimal)
     delete g;
 }
 
-TEST(OneVariableLessEncodingTest, TestGEOM20aNonIncrementalOptimal)
+TEST(TwoVariableGreaterEncodingTest, TestGEOM20UsingIncrementalOptimalWithSymetryBreaking)
 {
-    auto *g = BCPSolver::read_bcp_graph("../dataset/GEOM20a.col");
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
     if (g == nullptr)
     {
         exit(1);
     }
-    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableLess, g);
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesGreater, g, -1, true, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 21);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableGreaterEncodingTest, TestGEOM20UsingIncrementalOptimalWithHeuristic)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesGreater, g, -1, false, true);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 21);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableGreaterEncodingTest, TestGEOM20UsingIncrementalOptimalWithBoth)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesGreater, g, -1, true, true);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 21);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableGreaterEncodingTest, TestGEOM20aNonIncrementalOptimalWithoutAnything)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20a.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesGreater, g, -1, false, false);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
@@ -434,14 +470,65 @@ TEST(OneVariableLessEncodingTest, TestGEOM20aNonIncrementalOptimal)
     delete g;
 }
 
-TEST(OneVariableLessEncodingTest, TestGEOM20aIncrementalOptimal)
+TEST(TwoVariableGreaterEncodingTest, TestGEOM20aNonIncrementalOptimalWithSymetryBreaking)
 {
-    auto *g = BCPSolver::read_bcp_graph("../dataset/GEOM20a.col");
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20a.col");
     if (g == nullptr)
     {
         exit(1);
     }
-    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableLess, g);
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesGreater, g, -1, true, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 20);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableGreaterEncodingTest, TestGEOM20aNonIncrementalOptimalWithHeuristic)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20a.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesGreater, g, -1, false, true);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 20);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableGreaterEncodingTest, TestGEOM20aNonIncrementalOptimalWithBoth)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20a.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesGreater, g, -1, true, true);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 20);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableGreaterEncodingTest, TestGEOM20aIncrementalOptimalWithoutAnything)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20a.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesGreater, g, -1, false, false);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
@@ -451,14 +538,65 @@ TEST(OneVariableLessEncodingTest, TestGEOM20aIncrementalOptimal)
     delete g;
 }
 
-TEST(OneVariableLessEncodingTest, TestGEOM20bNonIncrementalOptimal)
+TEST(TwoVariableGreaterEncodingTest, TestGEOM20aIncrementalOptimalWithSymetryBreaking)
 {
-    auto *g = BCPSolver::read_bcp_graph("../dataset/GEOM20b.col");
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20a.col");
     if (g == nullptr)
     {
         exit(1);
     }
-    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableLess, g);
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesGreater, g, -1, true, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 20);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableGreaterEncodingTest, TestGEOM20aIncrementalOptimalWithHeuristic)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20a.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesGreater, g, -1, false, true);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 20);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableGreaterEncodingTest, TestGEOM20aIncrementalOptimalWithBoth)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20a.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesGreater, g, -1, true, true);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 20);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableGreaterEncodingTest, TestGEOM20bNonIncrementalOptimalWithoutAnything)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20b.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesGreater, g, -1, false, false);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
@@ -468,15 +606,1079 @@ TEST(OneVariableLessEncodingTest, TestGEOM20bNonIncrementalOptimal)
     delete g;
 }
 
-TEST(OneVariableLessEncodingTest, TestGEOM20bIncrementalOptimal)
+TEST(TwoVariableGreaterEncodingTest, TestGEOM20bNonIncrementalOptimalWithSymetryBreaking)
 {
-    auto *g = BCPSolver::read_bcp_graph("../dataset/GEOM20b.col");
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20b.col");
     if (g == nullptr)
     {
         exit(1);
     }
-    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableLess, g);
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesGreater, g, -1, true, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 13);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableGreaterEncodingTest, TestGEOM20bNonIncrementalOptimalWithHeuristic)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20b.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesGreater, g, -1, false, true);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 13);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableGreaterEncodingTest, TestGEOM20bNonIncrementalOptimalWithBoth)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20b.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesGreater, g, -1, true, true);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 13);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableGreaterEncodingTest, TestGEOM20bIncrementalOptimalWithoutAnything)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20b.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesGreater, g, -1, false, false);
     const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 13);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableGreaterEncodingTest, TestGEOM20bIncrementalOptimalWithSymetryBreaking)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20b.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesGreater, g, -1, true, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 13);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableGreaterEncodingTest, TestGEOM20bIncrementalOptimalWithHeuristic)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20b.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesGreater, g, -1, false, true);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 13);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableGreaterEncodingTest, TestGEOM20bIncrementalOptimalWithBoth)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20b.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesGreater, g, -1, true, true);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 13);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableLessEncodingTest, TestGEOM20NonOptimalWithoutAnything)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
+    constexpr auto dummyUpperBound = 100;
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesLess, g, dummyUpperBound, false, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, false, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::SATISFIABLE);
+    EXPECT_EQ(span, dummyUpperBound);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableLessEncodingTest, TestGEOM20NonOptimalWithSymetryBreaking)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
+    constexpr auto dummyUpperBound = 100;
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesLess, g, dummyUpperBound, true, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, false, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::SATISFIABLE);
+    EXPECT_EQ(span, dummyUpperBound);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableLessEncodingTest, TestGEOM20NonOptimalWithHeuristic)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
+    constexpr auto dummyUpperBound = 100;
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesLess, g, dummyUpperBound, false, true);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, false, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::SATISFIABLE);
+    EXPECT_EQ(span, dummyUpperBound);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableLessEncodingTest, TestGEOM20NonOptimalWithBoth)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
+    constexpr auto dummyUpperBound = 100;
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesLess, g, dummyUpperBound, true, true);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, false, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::SATISFIABLE);
+    EXPECT_EQ(span, dummyUpperBound);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableLessEncodingTest, TestGEOM20NonIncrementalOptimalWithoutAnything)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesLess, g, -1, false, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 21);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableLessEncodingTest, TestGEOM20NonIncrementalOptimalWithSymetryBreaking)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesLess, g, -1, true, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 21);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableLessEncodingTest, TestGEOM20NonIncrementalOptimalWithHeuristic)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesLess, g, -1, false, true);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 21);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableLessEncodingTest, TestGEOM20NonIncrementalOptimalWithBoth)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesLess, g, -1, true, true);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 21);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableLessEncodingTest, TestGEOM20UsingIncrementalOptimalWithoutAnything)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesLess, g, -1, false, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 21);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableLessEncodingTest, TestGEOM20UsingIncrementalOptimalWithSymetryBreaking)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesLess, g, -1, true, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 21);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableLessEncodingTest, TestGEOM20UsingIncrementalOptimalWithHeuristic)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesLess, g, -1, false, true);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 21);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableLessEncodingTest, TestGEOM20UsingIncrementalOptimalWithBoth)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesLess, g, -1, true, true);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 21);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableLessEncodingTest, TestGEOM20aNonIncrementalOptimalWithoutAnything)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20a.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesLess, g, -1, false, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 20);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableLessEncodingTest, TestGEOM20aNonIncrementalOptimalWithSymetryBreaking)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20a.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesLess, g, -1, true, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 20);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableLessEncodingTest, TestGEOM20aNonIncrementalOptimalWithHeuristic)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20a.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesLess, g, -1, false, true);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 20);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableLessEncodingTest, TestGEOM20aNonIncrementalOptimalWithBoth)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20a.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesLess, g, -1, true, true);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 20);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableLessEncodingTest, TestGEOM20aIncrementalOptimalWithoutAnything)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20a.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesLess, g, -1, false, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 20);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableLessEncodingTest, TestGEOM20aIncrementalOptimalWithSymetryBreaking)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20a.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesLess, g, -1, true, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 20);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableLessEncodingTest, TestGEOM20aIncrementalOptimalWithHeuristic)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20a.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesLess, g, -1, false, true);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 20);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableLessEncodingTest, TestGEOM20aIncrementalOptimalWithBoth)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20a.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesLess, g, -1, true, true);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 20);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableLessEncodingTest, TestGEOM20bNonIncrementalOptimalWithoutAnything)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20b.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesLess, g, -1, false, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 13);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableLessEncodingTest, TestGEOM20bNonIncrementalOptimalWithSymetryBreaking)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20b.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesLess, g, -1, true, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 13);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableLessEncodingTest, TestGEOM20bNonIncrementalOptimalWithHeuristic)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20b.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesLess, g, -1, false, true);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 13);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableLessEncodingTest, TestGEOM20bNonIncrementalOptimalWithBoth)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20b.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesLess, g, -1, true, true);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 13);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableLessEncodingTest, TestGEOM20bIncrementalOptimalWithoutAnything)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20b.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesLess, g, -1, false, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 13);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableLessEncodingTest, TestGEOM20bIncrementalOptimalWithSymetryBreaking)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20b.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesLess, g, -1, true, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 13);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableLessEncodingTest, TestGEOM20bIncrementalOptimalWithHeuristic)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20b.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesLess, g, -1, false, true);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 13);
+
+    delete s;
+    delete g;
+}
+
+TEST(TwoVariableLessEncodingTest, TestGEOM20bIncrementalOptimalWithBoth)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20b.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::TwoVariablesLess, g, -1, true, true);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 13);
+
+    delete s;
+    delete g;
+}
+
+TEST(OneVariableLessEncodingTest, TestGEOM20NonOptimalWithoutAnything)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
+    constexpr auto dummyUpperBound = 100;
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableLess, g, dummyUpperBound, false, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, false, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::SATISFIABLE);
+    EXPECT_EQ(span, dummyUpperBound);
+
+    delete s;
+    delete g;
+}
+
+TEST(OneVariableLessEncodingTest, TestGEOM20NonOptimalWithSymetryBreaking)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
+    constexpr auto dummyUpperBound = 100;
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableLess, g, dummyUpperBound, true, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, false, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::SATISFIABLE);
+    EXPECT_EQ(span, dummyUpperBound);
+
+    delete s;
+    delete g;
+}
+
+TEST(OneVariableLessEncodingTest, TestGEOM20NonIncrementalOptimalWithoutAnything)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableLess, g, -1, false, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 21);
+
+    delete s;
+    delete g;
+}
+
+TEST(OneVariableLessEncodingTest, TestGEOM20NonIncrementalOptimalWithSymetryBreaking)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableLess, g, -1, true, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 21);
+
+    delete s;
+    delete g;
+}
+
+TEST(OneVariableLessEncodingTest, TestGEOM20UsingIncrementalOptimalWithoutAnything)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableLess, g, -1, false, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 21);
+
+    delete s;
+    delete g;
+}
+
+TEST(OneVariableLessEncodingTest, TestGEOM20UsingIncrementalOptimalWithSymetryBreaking)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableLess, g, -1, true, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 21);
+
+    delete s;
+    delete g;
+}
+
+TEST(OneVariableLessEncodingTest, TestGEOM20aNonIncrementalOptimalWithoutAnything)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20a.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableLess, g, -1, false, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 20);
+
+    delete s;
+    delete g;
+}
+
+TEST(OneVariableLessEncodingTest, TestGEOM20aNonIncrementalOptimalWithSymetryBreaking)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20a.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableLess, g, -1, true, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 20);
+
+    delete s;
+    delete g;
+}
+
+TEST(OneVariableLessEncodingTest, TestGEOM20aIncrementalOptimalWithoutAnything)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20a.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableLess, g, -1, false, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 20);
+
+    delete s;
+    delete g;
+}
+
+TEST(OneVariableLessEncodingTest, TestGEOM20aIncrementalOptimalWithSymetryBreaking)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20a.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableLess, g, -1, true, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 20);
+
+    delete s;
+    delete g;
+}
+
+TEST(OneVariableLessEncodingTest, TestGEOM20bNonIncrementalOptimalWithoutAnything)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20b.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableLess, g, -1, false, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 13);
+
+    delete s;
+    delete g;
+}
+
+TEST(OneVariableLessEncodingTest, TestGEOM20bNonIncrementalOptimalWithSymetryBreaking)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20b.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableLess, g, -1, true, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 13);
+
+    delete s;
+    delete g;
+}
+
+TEST(OneVariableLessEncodingTest, TestGEOM20bIncrementalOptimalWithoutAnything)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20b.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableLess, g, -1, false, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 13);
+
+    delete s;
+    delete g;
+}
+
+TEST(OneVariableLessEncodingTest, TestGEOM20bIncrementalOptimalWithSymetryBreaking)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20b.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::OneVariableLess, g, -1, true, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, true);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 13);
+
+    delete s;
+    delete g;
+}
+
+TEST(StaircaseWithAuxiliaryVarsEncodingTest, TestGEOM20NonOptimalWithoutAnything)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
+    constexpr auto dummyUpperBound = 100;
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::StaircaseWithAuxiliaryVars, g, dummyUpperBound, false,
+                                                  false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, false, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::SATISFIABLE);
+    EXPECT_EQ(span, dummyUpperBound);
+
+    delete s;
+    delete g;
+}
+
+TEST(StaircaseWithAuxiliaryVarsEncodingTest, TestGEOM20NonOptimalWithSymetryBreaking)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
+    constexpr auto dummyUpperBound = 100;
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::StaircaseWithAuxiliaryVars, g, dummyUpperBound, true,
+                                                  false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, false, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::SATISFIABLE);
+    EXPECT_EQ(span, dummyUpperBound);
+
+    delete s;
+    delete g;
+}
+
+TEST(StaircaseWithAuxiliaryVarsEncodingTest, TestGEOM20NonIncrementalOptimalWithoutAnything)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::StaircaseWithAuxiliaryVars, g, -1, false, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 21);
+
+    delete s;
+    delete g;
+}
+
+TEST(StaircaseWithAuxiliaryVarsEncodingTest, TestGEOM20NonIncrementalOptimalWithSymetryBreaking)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::StaircaseWithAuxiliaryVars, g, -1, true, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 21);
+
+    delete s;
+    delete g;
+}
+
+TEST(StaircaseWithAuxiliaryVarsEncodingTest, TestGEOM20NonIncrementalOptimalWithHeuristic)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::StaircaseWithAuxiliaryVars, g, -1, false, true);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 21);
+
+    delete s;
+    delete g;
+}
+
+TEST(StaircaseWithAuxiliaryVarsEncodingTest, TestGEOM20NonIncrementalOptimalWithBoth)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::StaircaseWithAuxiliaryVars, g, -1, true, true);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 21);
+
+    delete s;
+    delete g;
+}
+
+TEST(StaircaseWithAuxiliaryVarsEncodingTest, TestGEOM20aNonIncrementalOptimalWithoutAnything)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20a.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::StaircaseWithAuxiliaryVars, g, -1, false, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 20);
+
+    delete s;
+    delete g;
+}
+
+TEST(StaircaseWithAuxiliaryVarsEncodingTest, TestGEOM20aNonIncrementalOptimalWithSymetryBreaking)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20a.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::StaircaseWithAuxiliaryVars, g, -1, true, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 20);
+
+    delete s;
+    delete g;
+}
+
+TEST(StaircaseWithAuxiliaryVarsEncodingTest, TestGEOM20aNonIncrementalOptimalWithHeuristic)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20a.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::StaircaseWithAuxiliaryVars, g, -1, false, true);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 20);
+
+    delete s;
+    delete g;
+}
+
+TEST(StaircaseWithAuxiliaryVarsEncodingTest, TestGEOM20aNonIncrementalOptimalWithBoth)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20a.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::StaircaseWithAuxiliaryVars, g, -1, true, true);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 20);
+
+    delete s;
+    delete g;
+}
+
+TEST(StaircaseWithAuxiliaryVarsEncodingTest, TestGEOM20bNonIncrementalOptimalWithoutAnything)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20b.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::StaircaseWithAuxiliaryVars, g, -1, false, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 13);
+
+    delete s;
+    delete g;
+}
+
+TEST(StaircaseWithAuxiliaryVarsEncodingTest, TestGEOM20bNonIncrementalOptimalWithSymetryBreaking)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20b.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::StaircaseWithAuxiliaryVars, g, -1, true, false);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 13);
+
+    delete s;
+    delete g;
+}
+
+TEST(StaircaseWithAuxiliaryVarsEncodingTest, TestGEOM20bNonIncrementalOptimalWithHeuristic)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20b.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::StaircaseWithAuxiliaryVars, g, -1, false, true);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 13);
+
+    delete s;
+    delete g;
+}
+
+TEST(StaircaseWithAuxiliaryVarsEncodingTest, TestGEOM20bNonIncrementalOptimalWithBoth)
+{
+    auto* g = BCPSolver::read_bcp_graph("../dataset/GEOM20b.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto* s = BCPSolver::BCPSolver::create_solver(BCPSolver::StaircaseWithAuxiliaryVars, g, -1, true, true);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
     const auto span = s->get_span();
     EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
     EXPECT_EQ(span, 13);

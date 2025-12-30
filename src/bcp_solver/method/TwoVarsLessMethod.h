@@ -29,7 +29,10 @@ namespace BCPSolver
 
         friend class BCPSolver;
 
-        explicit TwoVarsLessMethod(const Graph* graph, const int upper_bound = -1) : BCPSolver(graph, upper_bound)
+        explicit TwoVarsLessMethod(const Graph* graph, const int upper_bound,
+                                   const bool use_symmetry_breaking,
+                                   const bool use_heuristic) : BCPSolver(
+            graph, upper_bound, use_symmetry_breaking, use_heuristic)
         {
         }
     };
