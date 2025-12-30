@@ -12,6 +12,7 @@
 
 #include "method/OneVarGreaterMethod.h"
 #include "method/OneVarLessMethod.h"
+#include "method/StaircaseWithAuxiliaryVarsMethod.h"
 #include "method/TwoVarsGreaterMethod.h"
 #include "method/TwoVarsLessMethod.h"
 
@@ -177,7 +178,7 @@ BCPSolver::BCPSolver::BCPSolver(const Graph* graph, const int upper_bound) : gra
 
 
 BCPSolver::BCPSolver* BCPSolver::BCPSolver::create_solver(const SolvingMethod method, const Graph* graph,
-                                                          int upper_bound)
+                                                          const int upper_bound)
 {
     switch (method)
     {
@@ -189,6 +190,8 @@ BCPSolver::BCPSolver* BCPSolver::BCPSolver::create_solver(const SolvingMethod me
         return new OneVarGreaterMethod(graph, upper_bound);
     case OneVariableLess:
         return new OneVarLessMethod(graph, upper_bound);
+    case StaircaseWithAuxiliaryVars:
+        return new StaircaseWithAuxiliaryVarsMethod(graph, upper_bound);
     default:
         throw std::invalid_argument("Invalid solving method");
     }

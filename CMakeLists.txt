@@ -33,12 +33,23 @@ set(METHOD_SOURCES
         src/bcp_solver/method/OneVarGreaterMethod.h
         src/bcp_solver/method/OneVarLessMethod.cpp
         src/bcp_solver/method/OneVarLessMethod.h
+        src/bcp_solver/method/StaircaseWithAuxiliaryVarsMethod.cpp
+        src/bcp_solver/method/StaircaseWithAuxiliaryVarsMethod.h
+)
+
+set(ENCODER_SOURCES
+        src/card_encoder/clset.hh
+        src/card_encoder/common.hh
+        src/card_encoder/ptypes.hh
+        src/card_encoder/seqcounter.hh
+        src/card_encoder/utils.hh
 )
 
 add_executable(bcp
         src/main.cpp
         ${CORE_SOURCES}
         ${METHOD_SOURCES}
+        ${ENCODER_SOURCES}
 )
 target_link_libraries(bcp PRIVATE ${CADICAL_LIB})
 
@@ -48,6 +59,7 @@ add_executable(bcp_tests
         test/test_bcp.cpp
         ${CORE_SOURCES}
         ${METHOD_SOURCES}
+        ${ENCODER_SOURCES}
 )
 
 target_link_libraries(bcp_tests

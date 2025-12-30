@@ -25,6 +25,7 @@ namespace BCPSolver
         TwoVariablesLess,
         OneVariableGreater,
         OneVariableLess,
+        StaircaseWithAuxiliaryVars,
     };
 
     static constexpr double NO_TIME_LIMIT = std::numeric_limits<double>::lowest();
@@ -54,6 +55,21 @@ namespace BCPSolver
         [[nodiscard]] int get_number_of_edges() const;
 
         [[nodiscard]] int get_highest_degree_vertex() const;
+
+        [[nodiscard]] int get_degree(int node) const;
+
+        [[nodiscard]] std::vector<int> get_neighbors(const int node) const
+        {
+            std::vector<int> neighbors;
+            for (int j = 0; j < n; j++)
+            {
+                if (matrix[node][j] != 0)
+                {
+                    neighbors.push_back(j);
+                }
+            }
+            return neighbors;
+        }
     };
 
     Graph* read_bcp_graph(const std::string& file_path);

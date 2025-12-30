@@ -484,3 +484,73 @@ TEST(OneVariableLessEncodingTest, TestGEOM20bIncrementalOptimal)
     delete s;
     delete g;
 }
+
+TEST(StaircaseWithAuxiliaryVarsEncodingTest, TestGEOM20NonOptimal)
+{
+    auto *g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
+    constexpr auto dummyUpperBound = 100;
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::StaircaseWithAuxiliaryVars, g, dummyUpperBound);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, false, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::SATISFIABLE);
+    EXPECT_EQ(span, dummyUpperBound);
+
+    delete s;
+    delete g;
+}
+
+TEST(StaircaseWithAuxiliaryVarsEncodingTest, TestGEOM20NonIncrementalOptimal)
+{
+    auto *g = BCPSolver::read_bcp_graph("../dataset/GEOM20.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::StaircaseWithAuxiliaryVars, g);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 21);
+
+    delete s;
+    delete g;
+}
+
+
+TEST(StaircaseWithAuxiliaryVarsEncodingTest, TestGEOM20aNonIncrementalOptimal)
+{
+    auto *g = BCPSolver::read_bcp_graph("../dataset/GEOM20a.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::StaircaseWithAuxiliaryVars, g);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 20);
+
+    delete s;
+    delete g;
+}
+
+TEST(StaircaseWithAuxiliaryVarsEncodingTest, TestGEOM20bNonIncrementalOptimal)
+{
+    auto *g = BCPSolver::read_bcp_graph("../dataset/GEOM20b.col");
+    if (g == nullptr)
+    {
+        exit(1);
+    }
+    auto *s = BCPSolver::BCPSolver::create_solver(BCPSolver::StaircaseWithAuxiliaryVars, g);
+    const auto result = s->solve(BCPSolver::NO_TIME_LIMIT, true, false);
+    const auto span = s->get_span();
+    EXPECT_EQ(result, BCPSolver::SolverStatus::OPTIMAL);
+    EXPECT_EQ(span, 13);
+
+    delete s;
+    delete g;
+}

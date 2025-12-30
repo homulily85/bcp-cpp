@@ -65,6 +65,25 @@ int BCPSolver::Graph::get_highest_degree_vertex() const
     return max_vertex;
 }
 
+int BCPSolver::Graph::get_degree(const int node) const
+{
+    if (node < 0 || node >= n)
+    {
+        throw std::out_of_range("Node index out of bounds");
+    }
+
+    int degree = 0;
+    for (const int weight : matrix[node])
+    {
+        if (weight != 0)
+        {
+            degree++;
+        }
+    }
+
+    return degree;
+}
+
 BCPSolver::Graph* BCPSolver::read_bcp_graph(const std::string& file_path)
 {
     std::ifstream file(file_path);
@@ -119,7 +138,7 @@ void BCPSolver::ArgParser::printUsage(const char* programName)
         << "Arguments:\n"
         << "  <filename>                   Path to the input file\n"
         << "  <method>                     Method for solving: 'one-var-greater', "
-        "'one-var-less','two-vars-greater', 'two-vars-less'\n\n"
+        "'one-var-less','two-vars-greater', 'two-vars-less', 'staircase-aux'\n\n"
         << "Options:\n"
         << "  -t, --time_limit <int>       Set time limit\n"
         << "  -ub, --upper_bound <int>     Set preferred upper bound\n"
@@ -217,11 +236,16 @@ BCPSolver::ProgramConfig BCPSolver::ArgParser::parse(int argc, char* argv[])
                 {
                     config.solving_method = TwoVariablesLess;
                 }
+                else if (arg == "staircase-aux")
+                {
+                    config.solving_method = StaircaseWithAuxiliaryVars;
+                }
+
                 else
                 {
                     throw std::invalid_argument(
                         "Invalid method: " + arg +
-                        ". Expected 'one-var-greater', 'one-var-less','two-vars-greater', 'two-vars-less'.");
+                        ". Expected 'one-var-greater', 'one-var-less','two-vars-greater', 'two-vars-less', 'staircase-aux'.");
                 }
                 methodFound = true;
             }

@@ -25,7 +25,6 @@ namespace BCPSolver
 
         std::vector<int>* create_assumptions() override;
 
-    protected:
         friend class BCPSolver;
 
         explicit OneVarGreaterMethod(const Graph* graph, const int upper_bound = -1) : BCPSolver(graph, upper_bound)
