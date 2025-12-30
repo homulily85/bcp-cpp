@@ -143,6 +143,8 @@ void BCPSolver::ArgParser::printUsage(const char* programName)
         << "  -t, --time_limit <int>       Set time limit\n"
         << "  -ub, --upper_bound <int>     Set preferred upper bound\n"
         << "  --no-optimal                 Disable finding optimal value\n"
+        << "  --use-symmetry-breaking      Enable symmetry breaking (default: enabled)\n"
+        << "  --use-heuristics             Enable heuristics while encoding (default: disabled)\n"
         << "  -i, --incremental            Enable incremental mode\n"
         << "  -h, --help                   Show this help message\n";
 }
@@ -155,9 +157,7 @@ BCPSolver::ProgramConfig BCPSolver::ArgParser::parse(int argc, char* argv[])
 
     for (int i = 1; i < argc; ++i)
     {
-        std::string arg = argv[i];
-
-        if (arg == "-h" || arg == "--help")
+        if (std::string arg = argv[i]; arg == "-h" || arg == "--help")
         {
             printUsage(argv[0]);
             exit(0);
@@ -197,6 +197,14 @@ BCPSolver::ProgramConfig BCPSolver::ArgParser::parse(int argc, char* argv[])
             }
             else
                 throw std::invalid_argument("Missing value for upper bound");
+        }
+        else if (arg == "--use-symmetry-breaking")
+        {
+            config.use_symmetry_breaking = true;
+        }
+        else if (arg == "--use-heuristics")
+        {
+            config.use_heuristics = true;
         }
         else if (arg == "--no-optimal")
         {
@@ -240,7 +248,6 @@ BCPSolver::ProgramConfig BCPSolver::ArgParser::parse(int argc, char* argv[])
                 {
                     config.solving_method = StaircaseWithAuxiliaryVars;
                 }
-
                 else
                 {
                     throw std::invalid_argument(

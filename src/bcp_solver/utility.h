@@ -81,11 +81,13 @@ namespace BCPSolver
         int upper_bound;
         bool find_optimal;
         bool incremental_mode;
+        bool use_symmetry_breaking;
+        bool use_heuristics;
         SolvingMethod solving_method;
         // Constructor with defaults
         ProgramConfig()
             : time_limit(NO_TIME_LIMIT), upper_bound(-1), find_optimal(true), incremental_mode(false),
-              solving_method(TwoVariablesGreater)
+              use_symmetry_breaking(true), use_heuristics(false), solving_method(TwoVariablesGreater)
         {
         }
     };

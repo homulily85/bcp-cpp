@@ -75,7 +75,11 @@ void BCPSolver::OneVarGreaterMethod::encode()
 
     create_variable();
 
-    symmetry_breaking();
+    if (use_symmetry_breaking)
+    {
+        symmetry_breaking();
+    }
+
     first_constraint();
     second_constraint();
     third_constraint();

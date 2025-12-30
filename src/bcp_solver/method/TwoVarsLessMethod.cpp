@@ -53,40 +53,43 @@ void BCPSolver::TwoVarsLessMethod::fourth_constraint()
 {
     for (const auto& edge : graph->get_edges())
     {
-        if (auto [u, v, weight] = edge; weight == 1)
+        auto [u, v, weight] = edge;
+        if (use_heuristic)
         {
-            for (int c = 1; c <= span; c++)
+            if (weight == 1)
             {
-                if (c - 1 < 0 && c + 1 > span)
+                for (int c = 1; c <= span; c++)
                 {
-                    sat_solver.add_clause(-x[{u, c}]);
+                    if (c - 1 < 0 && c + 1 > span)
+                    {
+                        sat_solver.add_clause(-x[{u, c}]);
+                    }
+                    else
+                    {
+                        sat_solver.add_clause(-x[{u, c}], -x[{v, c}]);
+                    }
                 }
-                else
-                {
-                    sat_solver.add_clause(-x[{u, c}], -x[{v, c}]);
-                }
+                continue;
             }
         }
-        else
+
+        for (int c = 1; c <= span; c++)
         {
-            for (int c = 1; c <= span; c++)
+            if (c - weight < 1 && c + weight - 1 > span)
             {
-                if (c - weight < 1 && c + weight - 1 > span)
-                {
-                    sat_solver.add_clause(-x[{u, c}]);
-                }
-                else if (c - weight < 1)
-                {
-                    sat_solver.add_clause(-x[{u, c}], -y[{v, c + weight - 1}]);
-                }
-                else if (c + weight - 1 > span)
-                {
-                    sat_solver.add_clause(-x[{u, c}], y[{v, c - weight}]);
-                }
-                else
-                {
-                    sat_solver.add_clause(-x[{u, c}], -y[{v, c + weight - 1}], y[{v, c - weight}]);
-                }
+                sat_solver.add_clause(-x[{u, c}]);
+            }
+            else if (c - weight < 1)
+            {
+                sat_solver.add_clause(-x[{u, c}], -y[{v, c + weight - 1}]);
+            }
+            else if (c + weight - 1 > span)
+            {
+                sat_solver.add_clause(-x[{u, c}], y[{v, c - weight}]);
+            }
+            else
+            {
+                sat_solver.add_clause(-x[{u, c}], -y[{v, c + weight - 1}], y[{v, c - weight}]);
             }
         }
     }
@@ -98,7 +101,11 @@ void BCPSolver::TwoVarsLessMethod::encode()
 
     create_variable();
 
-    symmetry_breaking();
+    if (use_symmetry_breaking)
+    {
+        symmetry_breaking();
+    }
+
     first_constraint();
     second_constraint();
     third_constraint();

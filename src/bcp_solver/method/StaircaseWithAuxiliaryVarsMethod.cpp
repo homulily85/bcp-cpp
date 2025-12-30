@@ -77,6 +77,18 @@ void BCPSolver::StaircaseWithAuxiliaryVarsMethod::second_constraint()
             }
         }
 
+        if (use_heuristic)
+        {
+            if (weight == 1)
+            {
+                for (int c = 1; c < span + 1; c++)
+                {
+                    sat_solver.add_clause(-x[{u, c}], -x[{v, c}]);
+                }
+                continue;
+            }
+        }
+
         for (int c = 1; c < span - weight + 2; c++)
         {
             const auto groups_for_u = split_range_by_groups(c, c + weight - 1, max_weight[u]);
@@ -101,7 +113,11 @@ void BCPSolver::StaircaseWithAuxiliaryVarsMethod::encode()
 
     create_variable();
 
-    // symmetry_breaking();
+    if (use_symmetry_breaking)
+    {
+        symmetry_breaking();
+    }
+
     first_constraint();
     second_constraint();
 

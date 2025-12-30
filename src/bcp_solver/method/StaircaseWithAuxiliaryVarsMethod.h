@@ -28,8 +28,10 @@ namespace BCPSolver
 
         friend class BCPSolver;
 
-        explicit StaircaseWithAuxiliaryVarsMethod(const Graph* graph, const int upper_bound = -1)
-            : BCPSolver(graph, upper_bound)
+        explicit StaircaseWithAuxiliaryVarsMethod(const Graph* graph, const int upper_bound,
+                                                  const bool use_symmetry_breaking,
+                                                  const bool use_heuristic) : BCPSolver(
+            graph, upper_bound, use_symmetry_breaking, use_heuristic)
         {
         }
 
@@ -41,7 +43,7 @@ namespace BCPSolver
 
         void glue_window(int node, int window_index, int n, int width);
 
-        static std::vector<std::pair<int,int>> group_range(int n, int k);
+        static std::vector<std::pair<int, int>> group_range(int n, int k);
 
         static std::vector<std::pair<int, int>> split_range_by_groups(int a, int b, int k);
 

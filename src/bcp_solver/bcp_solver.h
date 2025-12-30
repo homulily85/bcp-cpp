@@ -23,6 +23,8 @@ namespace BCPSolver
         SolverStatus status{UNKNOWN};
 
         double encoding_time{};
+        bool use_symmetry_breaking;
+        bool use_heuristic;
 
         void calculate_upper_bound();
 
@@ -39,7 +41,7 @@ namespace BCPSolver
 
         virtual std::vector<int>* create_assumptions() =0;
 
-        explicit BCPSolver(const Graph* graph, int upper_bound = -1);
+        explicit BCPSolver(const Graph* graph, int upper_bound, bool use_symmetry_breaking, bool use_heuristic);
 
     public:
         BCPSolver(const BCPSolver& other) = delete;
@@ -47,7 +49,9 @@ namespace BCPSolver
 
         virtual ~BCPSolver() = default;
 
-        static BCPSolver* create_solver(SolvingMethod method, const Graph* graph, int upper_bound = -1);
+        static BCPSolver* create_solver(SolvingMethod method, const Graph* graph, int upper_bound = -1,
+                                        bool use_symmetry_breaking = true,
+                                        bool use_heuristic = false);
 
         SolverStatus non_optimal_solving(double time_limit);
 
