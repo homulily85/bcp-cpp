@@ -4,6 +4,7 @@
 
 #ifndef BCP_STAIRCASEWITHAUXILIARYVARSMETHOD_H
 #define BCP_STAIRCASEWITHAUXILIARYVARSMETHOD_H
+
 #include "bcp_solver/bcp_solver.h"
 
 namespace BCPSolver
@@ -12,6 +13,7 @@ namespace BCPSolver
     {
     private:
         std::map<std::tuple<int, int, int>, int> staircase_aux_vars{};
+        std::map<std::tuple<int, int, int, int>, int> used_tuple;
         std::vector<int> max_weight{std::vector(graph->get_number_of_nodes(), 0)};
 
         void symmetry_breaking();
