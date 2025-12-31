@@ -9,7 +9,7 @@ int main(int argc, char* argv[])
     {
         const BCPSolver::ProgramConfig config = BCPSolver::ArgParser::parse(argc, argv);
 
-        auto* g = BCPSolver::read_bcp_graph(config.filename);
+        const auto* g = BCPSolver::read_bcp_graph(config.filename);
         if (g == nullptr)
         {
             exit(1);
