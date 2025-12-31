@@ -455,12 +455,12 @@ std::vector<int> BCPSolver::StaircaseWithAuxiliaryVarsMethod::create_aux_var_for
     const std::vector<std::pair<int, int>>& group, const int bound)
 {
     std::vector<int> aux_vars;
-    const auto tuple = std::make_tuple(node, group[0].first, group[0].second, bound);
-    if (used_tuple.contains(tuple))
-    {
-        aux_vars.push_back(used_tuple[tuple]);
-        return aux_vars;
-    }
+    // const auto tuple = std::make_tuple(node, group[0].first, group[0].second, bound);
+    // if (used_tuple.contains(tuple))
+    // {
+    //     aux_vars.push_back(used_tuple[tuple]);
+    //     return aux_vars;
+    // }
     const int s = sat_solver.create_new_variable();
     sat_solver.add_clause(
         get_aux_var_for_staircase(node, group[0].first, bound),
@@ -476,7 +476,7 @@ std::vector<int> BCPSolver::StaircaseWithAuxiliaryVarsMethod::create_aux_var_for
         -s, -get_aux_var_for_staircase(node, group[0].second + 1, bound));
     aux_vars.push_back(s);
 
-    used_tuple[tuple] = s;
+    // used_tuple[tuple] = s;
 
     return aux_vars;
 }
@@ -485,12 +485,12 @@ std::vector<int> BCPSolver::StaircaseWithAuxiliaryVarsMethod::create_aux_var_for
     const std::vector<std::pair<int, int>>& group, const int bound)
 {
     std::vector<int> aux_vars;
-    const auto tuple = std::make_tuple(node, group[0].first, group[0].second, bound);
-    if (used_tuple.contains(tuple))
-    {
-        aux_vars.push_back(used_tuple[tuple]);
-        return aux_vars;
-    }
+    // const auto tuple = std::make_tuple(node, group[0].first, group[0].second, bound);
+    // if (used_tuple.contains(tuple))
+    // {
+    //     aux_vars.push_back(used_tuple[tuple]);
+    //     return aux_vars;
+    // }
 
     const int s = sat_solver.create_new_variable();
     sat_solver.add_clause(
@@ -507,7 +507,7 @@ std::vector<int> BCPSolver::StaircaseWithAuxiliaryVarsMethod::create_aux_var_for
         -s, -get_aux_var_for_staircase(node, bound, group[0].first - 1));
     aux_vars.push_back(s);
 
-    used_tuple[tuple] = s;
+    // used_tuple[tuple] = s;
 
     return aux_vars;
 }
