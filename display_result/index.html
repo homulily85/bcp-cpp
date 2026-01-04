@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>BCP Results</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: #f9fafb;
+            padding: 24px;
+            color: #1f2937;
+        }
+
+        h1 { margin-top: 0; }
+        h2 { margin-top: 32px; margin-bottom: 16px; font-size: 1.25rem; }
+
+        /* --- Controls --- */
+        .mode-toggle {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 24px;
+            padding: 10px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            width: fit-content;
+        }
+        
+        label { cursor: pointer; display: flex; align-items: center; gap: 6px; }
+
+        select {
+            padding: 8px 12px;
+            font-size: 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background-color: white;
+            min-width: 250px;
+        }
+
+        button#addCompare {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            background-color: #2563eb;
+            color: #ffffff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        button#addCompare:hover { background-color: #1d4ed8; }
+        button#addCompare:active { background-color: #1e40af; }
+
+        .compare-selectors {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+            align-items: center;
+        }
+
+        /* --- Tables --- */
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 24px;
+            position: relative; /* Context for absolute positioning if needed */
+        }
+
+        table {
+            border-collapse: separate; /* Required for sticky headers sometimes */
+            border-spacing: 0;
+            font-size: 13px;
+            white-space: nowrap;
+            min-width: 100%;
+        }
+
+        th, td {
+            border: 1px solid #e5e7eb;
+            padding: 10px 14px;
+        }
+
+        /* Default align for data is right (numbers) */
+        td { text-align: right; }
+
+        /* --- Header Styling --- */
+        
+        /* Ensure ALL headers are center aligned */
+        th { 
+            text-align: center !important; 
+            vertical-align: middle;
+        }
+
+        /* First row (Metric Names) */
+        thead tr:first-child th {
+            background-color: #f3f4f6;
+            color: #374151;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.05em;
+            border-bottom: 2px solid #d1d5db;
+        }
+
+        /* Second row (Run numbers 1, 2...) */
+        thead tr:nth-child(2) th {
+            background-color: #f9fafb;
+            color: #4b5563;
+            font-weight: 600;
+        }
+
+        /* --- Sticky Columns Fix --- */
+
+        /* 1. Stick the 'Name' header (First TH of First Row) */
+        #detailTable thead tr:first-child th:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 20;
+            background-color: #f3f4f6;
+            border-right: 2px solid #d1d5db;
+        }
+
+        /* 2. Stick the 'Name' data cells (First TD of every body row) */
+        #detailTable tbody td:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 10;
+            background-color: white;
+            border-right: 2px solid #d1d5db;
+            text-align: left; /* Force name to be left-aligned */
+            font-weight: 500;
+        }
+
+        /* 3. CRITICAL FIX: Ensure the first cell of the SECOND header row (the "1") 
+              does NOT stick. It was catching the generic th:first-child rule before. */
+        #detailTable thead tr:nth-child(2) th:first-child {
+            position: static; 
+            border-left: 1px solid #e5e7eb;
+        }
+
+        /* --- Visual Separators --- */
+        .group-start {
+            border-left: 2px solid #9ca3af !important;
+        }
+
+        /* --- Legend --- */
+        .legend {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 12px;
+            padding: 12px;
+            background: #eff6ff;
+            border: 1px solid #dbeafe;
+            border-radius: 6px;
+        }
+        .legend-item {
+            font-size: 14px;
+            color: #1e3a8a;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .legend-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            background: #2563eb;
+            color: white;
+            border-radius: 50%;
+            font-size: 12px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .hidden { display: none; }
+    </style>
+</head>
+
+<body>
+
+    <h1>BCP Results</h1>
+
+    <div class="mode-toggle">
+        <label><input type="radio" name="mode" value="single" checked> Single file</label>
+        <label><input type="radio" name="mode" value="compare"> Compare (max 4)</label>
+    </div>
+
+    <section id="singleMode">
+        <label>
+            <strong>Choose file:</strong>
+            <select id="singleSelect">
+                <option value="">-- select file --</option>
+                <option value="BCP_one-var-greater_2026-01-01-08-40-15.csv">BCP_one-var-greater_2026-01-01-08-40-15.csv</option>
+                <option value="BCP_one-var-greater_incremental_2026-01-01-10-06-43.csv">BCP_one-var-greater_incremental_2026-01-01-10-06-43.csv</option>
+                <option value="BCP_one-var-greater_symmetry-breaking_2026-01-01-10-54-03.csv">BCP_one-var-greater_symmetry-breaking_2026-01-01-10-54-03.csv</option>
+                <option value="BCP_one-var-less_2026-01-01-03-47-16.csv">BCP_one-var-less_2026-01-01-03-47-16.csv</option>
+                <option value="BCP_one-var-less_incremental_2026-01-01-05-16-55.csv">BCP_one-var-less_incremental_2026-01-01-05-16-55.csv</option>
+                <option value="BCP_one-var-less_symmetry-breaking_2026-01-01-06-30-14.csv">BCP_one-var-less_symmetry-breaking_2026-01-01-06-30-14.csv</option>
+                <option value="BCP_staircase-aux_2026-01-01-13-09-12.csv">BCP_staircase-aux_2026-01-01-13-09-12.csv</option>
+                <option value="BCP_staircase-aux_heuristic_2026-01-02-18-38-58.csv">BCP_staircase-aux_heuristic_2026-01-02-18-38-58.csv</option>
+                <option value="BCP_staircase-aux_symmetry-breaking_2026-01-01-14-12-53.csv">BCP_staircase-aux_symmetry-breaking_2026-01-01-14-12-53.csv</option>
+                <option value="BCP_staircase-aux_symmetry-breaking_heuristic_2026-01-01-15-23-34.csv">BCP_staircase-aux_symmetry-breaking_heuristic_2026-01-01-15-23-34.csv</option>
+                <option value="BCP_two-vars-greater_2026-01-02-08-37-24.csv">BCP_two-vars-greater_2026-01-02-08-37-24.csv</option>
+                <option value="BCP_two-vars-greater_heuristic_2026-01-02-10-21-10.csv">BCP_two-vars-greater_heuristic_2026-01-02-10-21-10.csv</option>
+                <option value="BCP_two-vars-greater_heuristic_incremental_2026-01-02-13-53-00.csv">BCP_two-vars-greater_heuristic_incremental_2026-01-02-13-53-00.csv</option>
+                <option value="BCP_two-vars-greater_incremental_2026-01-02-11-46-33.csv">BCP_two-vars-greater_incremental_2026-01-02-11-46-33.csv</option>
+                <option value="BCP_two-vars-greater_symmetry-breaking_2026-01-02-09-28-53.csv">BCP_two-vars-greater_symmetry-breaking_2026-01-02-09-28-53.csv</option>
+                <option value="BCP_two-vars-greater_symmetry-breaking_heuristic_2026-01-02-12-32-07.csv">BCP_two-vars-greater_symmetry-breaking_heuristic_2026-01-02-12-32-07.csv</option>
+                <option value="BCP_two-vars-greater_symmetry-breaking_heuristic_incremental_2026-01-02-16-39-34.csv">BCP_two-vars-greater_symmetry-breaking_heuristic_incremental_2026-01-02-16-39-34.csv</option>
+                <option value="BCP_two-vars-greater_symmetry-breaking_incremental_2026-01-02-15-16-40.csv">BCP_two-vars-greater_symmetry-breaking_incremental_2026-01-02-15-16-40.csv</option>
+                <option value="BCP_two-vars-less_2026-01-01-23-23-52.csv">BCP_two-vars-less_2026-01-01-23-23-52.csv</option>
+                <option value="BCP_two-vars-less_heuristic_2026-01-02-01-03-14.csv">BCP_two-vars-less_heuristic_2026-01-02-01-03-14.csv</option>
+                <option value="BCP_two-vars-less_heuristic_incremental_2026-01-02-04-47-48.csv">BCP_two-vars-less_heuristic_incremental_2026-01-02-04-47-48.csv</option>
+                <option value="BCP_two-vars-less_incremental_2026-01-02-02-31-41.csv">BCP_two-vars-less_incremental_2026-01-02-02-31-41.csv</option>
+                <option value="BCP_two-vars-less_symmetry-breaking_2026-01-02-00-10-55.csv">BCP_two-vars-less_symmetry-breaking_2026-01-02-00-10-55.csv</option>
+                <option value="BCP_two-vars-less_symmetry-breaking_heuristic_2026-01-02-03-23-13.csv">BCP_two-vars-less_symmetry-breaking_heuristic_2026-01-02-03-23-13.csv</option>
+                <option value="BCP_two-vars-less_symmetry-breaking_heuristic_incremental_2026-01-02-07-44-04.csv">BCP_two-vars-less_symmetry-breaking_heuristic_incremental_2026-01-02-07-44-04.csv</option>
+                <option value="BCP_two-vars-less_symmetry-breaking_incremental_2026-01-02-06-10-45.csv">BCP_two-vars-less_symmetry-breaking_incremental_2026-01-02-06-10-45.csv</option>
+            </select>
+        </label>
+        
+        <h2>File Content</h2>
+        <div class="table-container">
+            <table id="singleTable"></table>
+        </div>
+    </section>
+
+    <section id="compareMode" class="hidden">
+        <div class="compare-selectors" id="compareSelectors"></div>
+        <button id="addCompare">Add file to compare</button>
+
+        <h2>Summary Comparison</h2>
+        <div class="table-container">
+            <table id="summaryTable">
+                <thead>
+                    <tr>
+                        <th>File</th>
+                        <th>#Instances</th>
+                        <th>Avg Variables</th>
+                        <th>Avg Clauses</th>
+                        <th>Avg Time Used</th>
+                        <th>Max Memory</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <h2>Detail Comparison</h2>
+        
+        <div id="compareLegend" class="legend"></div>
+
+        <div class="table-container">
+            <table id="detailTable">
+                <thead></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </section>
+
+    <script>
+        const DATA_DIR = "data/";
+        const FILES = [
+            "BCP_one-var-greater_2026-01-01-08-40-15.csv",
+            "BCP_one-var-greater_incremental_2026-01-01-10-06-43.csv",
+            "BCP_one-var-greater_symmetry-breaking_2026-01-01-10-54-03.csv",
+            "BCP_one-var-less_2026-01-01-03-47-16.csv",
+            "BCP_one-var-less_incremental_2026-01-01-05-16-55.csv",
+            "BCP_one-var-less_symmetry-breaking_2026-01-01-06-30-14.csv",
+            "BCP_staircase-aux_2026-01-01-13-09-12.csv",
+            "BCP_staircase-aux_heuristic_2026-01-02-18-38-58.csv",
+            "BCP_staircase-aux_symmetry-breaking_2026-01-01-14-12-53.csv",
+            "BCP_staircase-aux_symmetry-breaking_heuristic_2026-01-01-15-23-34.csv",
+            "BCP_two-vars-greater_2026-01-02-08-37-24.csv",
+            "BCP_two-vars-greater_heuristic_2026-01-02-10-21-10.csv",
+            "BCP_two-vars-greater_heuristic_incremental_2026-01-02-13-53-00.csv",
+            "BCP_two-vars-greater_incremental_2026-01-02-11-46-33.csv",
+            "BCP_two-vars-greater_symmetry-breaking_2026-01-02-09-28-53.csv",
+            "BCP_two-vars-greater_symmetry-breaking_heuristic_2026-01-02-12-32-07.csv",
+            "BCP_two-vars-greater_symmetry-breaking_heuristic_incremental_2026-01-02-16-39-34.csv",
+            "BCP_two-vars-greater_symmetry-breaking_incremental_2026-01-02-15-16-40.csv",
+            "BCP_two-vars-less_2026-01-01-23-23-52.csv",
+            "BCP_two-vars-less_heuristic_2026-01-02-01-03-14.csv",
+            "BCP_two-vars-less_heuristic_incremental_2026-01-02-04-47-48.csv",
+            "BCP_two-vars-less_incremental_2026-01-02-02-31-41.csv",
+            "BCP_two-vars-less_symmetry-breaking_2026-01-02-00-10-55.csv",
+            "BCP_two-vars-less_symmetry-breaking_heuristic_2026-01-02-03-23-13.csv",
+            "BCP_two-vars-less_symmetry-breaking_heuristic_incremental_2026-01-02-07-44-04.csv",
+            "BCP_two-vars-less_symmetry-breaking_incremental_2026-01-02-06-10-45.csv",
+        ];
+        const MAX_COMPARE = 4;
+
+        const singleMode = document.getElementById("singleMode");
+        const compareMode = document.getElementById("compareMode");
+        const singleSelect = document.getElementById("singleSelect");
+        const singleTable = document.getElementById("singleTable");
+        const compareSelectors = document.getElementById("compareSelectors");
+        const summaryBody = document.querySelector("#summaryTable tbody");
+        const detailTable = document.getElementById("detailTable");
+        const compareLegend = document.getElementById("compareLegend");
+        const addCompareBtn = document.getElementById("addCompare");
+
+        const STATIC_COLS = ['name', 'V', 'E', 'upper_bound'];
+        const METRIC_COLS = [
+            'variables', 'clauses', 'status', 'span', 
+            'encoding_time', 'total_solving_time', 'time_used', 'memory_usage'
+        ];
+
+        /* ---------------- MODE SWITCH ---------------- */
+        document.querySelectorAll("input[name=mode]").forEach(r => {
+            r.addEventListener("change", e => {
+                const isSingle = e.target.value === "single";
+                singleMode.classList.toggle("hidden", !isSingle);
+                compareMode.classList.toggle("hidden", isSingle);
+                if (isSingle) {
+                    singleTable.innerHTML = "";
+                } else {
+                    summaryBody.innerHTML = "";
+                    detailTable.innerHTML = "";
+                    compareLegend.innerHTML = "";
+                    compareSelectors.innerHTML = "";
+                }
+            });
+        });
+
+        /* ---------------- SINGLE MODE ---------------- */
+        singleSelect.addEventListener("change", () => {
+            if (!singleSelect.value) return;
+            Papa.parse(DATA_DIR + singleSelect.value, {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: res => renderSingleTable(res.data)
+            });
+        });
+
+        function renderSingleTable(rows) {
+            if (!rows.length) return;
+            singleTable.innerHTML = "";
+            const thead = document.createElement("thead");
+            const tr = document.createElement("tr");
+            Object.keys(rows[0]).forEach(k => {
+                const th = document.createElement("th");
+                th.textContent = k;
+                tr.appendChild(th);
+            });
+            thead.appendChild(tr);
+            singleTable.appendChild(thead);
+            const tbody = document.createElement("tbody");
+            rows.forEach(row => {
+                const tr = document.createElement("tr");
+                Object.values(row).forEach(v => {
+                    const td = document.createElement("td");
+                    td.textContent = v;
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+            singleTable.appendChild(tbody);
+        }
+
+        /* ---------------- COMPARE MODE ---------------- */
+        addCompareBtn.addEventListener("click", () => {
+            if (compareSelectors.children.length >= MAX_COMPARE) return;
+            const s = createCompareSelect();
+            compareSelectors.appendChild(s);
+        });
+
+        function createCompareSelect() {
+            const select = document.createElement("select");
+            select.innerHTML = `<option value="">-- select file --</option>` +
+                FILES.map(f => `<option value="${f}">${f}</option>`).join("");
+            select.addEventListener("change", loadComparison);
+            return select;
+        }
+
+        function loadComparison() {
+            summaryBody.innerHTML = "";
+            detailTable.innerHTML = "";
+            compareLegend.innerHTML = "";
+
+            const selectedFiles = [...compareSelectors.querySelectorAll("select")]
+                .map(s => s.value)
+                .filter(Boolean);
+
+            if (selectedFiles.length === 0) return;
+
+            // Load all files in parallel
+            const promises = selectedFiles.map(file => new Promise(resolve => {
+                Papa.parse(DATA_DIR + file, {
+                    download: true,
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: res => resolve({ filename: file, data: res.data })
+                });
+            }));
+
+            Promise.all(promises).then(results => {
+                // Populate Legend
+                results.forEach((res, i) => {
+                    const item = document.createElement("div");
+                    item.className = "legend-item";
+                    item.innerHTML = `<span class="legend-badge">${i + 1}</span> ${res.filename}`;
+                    compareLegend.appendChild(item);
+                });
+
+                // Render Summary
+                results.forEach((res, i) => summarize(res.filename, res.data, i + 1));
+                
+                // Render Detail
+                renderDetailComparison(results);
+            });
+        }
+
+        function summarize(filename, rows, index) {
+            const avg = (k) => (rows.reduce((s, r) => s + (+r[k] || 0), 0) / rows.length).toFixed(2);
+            const max = (k) => Math.max(...rows.map(r => +r[k] || 0)).toFixed(2);
+            
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td style="text-align:left">
+                    <span style="font-weight:bold; color:#2563eb; margin-right:6px;">[${index}]</span> 
+                    ${filename}
+                </td>
+                <td>${rows.length}</td>
+                <td>${avg("variables")}</td>
+                <td>${avg("clauses")}</td>
+                <td>${avg("time_used")}</td>
+                <td>${max("memory_usage")}</td>
+            `;
+            summaryBody.appendChild(tr);
+        }
+
+        function renderDetailComparison(results) {
+            if (!results.length) return;
+            const numRuns = results.length;
+
+            // 1. Build Dictionary of Instances
+            const instanceMap = {}; 
+            results.forEach((res, index) => {
+                res.data.forEach(row => {
+                    const name = row['name'];
+                    if (!name) return;
+                    if (!instanceMap[name]) {
+                        instanceMap[name] = { 
+                            static: {}, 
+                            runs: new Array(numRuns).fill({}) 
+                        };
+                        STATIC_COLS.forEach(col => instanceMap[name].static[col] = row[col] || '-');
+                    }
+                    instanceMap[name].runs[index] = row;
+                });
+            });
+
+            // 2. Build Header
+            const thead = document.createElement("thead");
+            
+            // Header Row 1: Metrics
+            const tr1 = document.createElement("tr");
+            STATIC_COLS.forEach(col => {
+                const th = document.createElement("th");
+                th.textContent = col;
+                th.rowSpan = 2;
+                th.style.verticalAlign = "bottom";
+                tr1.appendChild(th);
+            });
+            METRIC_COLS.forEach(metric => {
+                const th = document.createElement("th");
+                th.textContent = metric;
+                th.colSpan = numRuns;
+                th.classList.add("group-start");
+                tr1.appendChild(th);
+            });
+            thead.appendChild(tr1);
+
+            // Header Row 2: Run Indices (mapped to Legend)
+            const tr2 = document.createElement("tr");
+            METRIC_COLS.forEach(metric => {
+                results.forEach((res, i) => {
+                    const th = document.createElement("th");
+                    th.textContent = `${i+1}`; // Matches legend badge
+                    th.title = res.filename;
+                    if (i === 0) th.classList.add("group-start");
+                    tr2.appendChild(th);
+                });
+            });
+            thead.appendChild(tr2);
+            detailTable.appendChild(thead);
+
+            // 3. Build Body
+            const tbody = document.createElement("tbody");
+            const sortedNames = Object.keys(instanceMap).sort();
+
+            sortedNames.forEach(name => {
+                const entry = instanceMap[name];
+                const tr = document.createElement("tr");
+
+                STATIC_COLS.forEach(col => {
+                    const td = document.createElement("td");
+                    td.textContent = entry.static[col];
+                    tr.appendChild(td);
+                });
+
+                METRIC_COLS.forEach(metric => {
+                    entry.runs.forEach((runData, i) => {
+                        const td = document.createElement("td");
+                        td.textContent = runData[metric] !== undefined ? runData[metric] : '-';
+                        if (i === 0) td.classList.add("group-start");
+                        tr.appendChild(td);
+                    });
+                });
+
+                tbody.appendChild(tr);
+            });
+            detailTable.appendChild(tbody);
+        }
+    </script>
+
+</body>
+</html>
