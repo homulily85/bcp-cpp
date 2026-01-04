@@ -87,7 +87,7 @@ namespace BCPSolver
         // Constructor with defaults
         ProgramConfig()
             : time_limit(NO_TIME_LIMIT), upper_bound(-1), find_optimal(true), incremental_mode(false),
-              use_symmetry_breaking(true), use_heuristics(false), solving_method(TwoVariablesGreater)
+              use_symmetry_breaking(false), use_heuristics(false), solving_method(TwoVariablesGreater)
         {
         }
     };

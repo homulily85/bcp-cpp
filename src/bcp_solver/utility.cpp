@@ -143,8 +143,8 @@ void BCPSolver::ArgParser::printUsage(const char* programName)
         << "  -t, --time_limit <int>       Set time limit\n"
         << "  -ub, --upper_bound <int>     Set preferred upper bound\n"
         << "  --no-optimal                 Disable finding optimal value\n"
-        << "  --use-symmetry-breaking      Enable symmetry breaking (default: enabled)\n"
-        << "  --use-heuristics             Enable heuristics while encoding (default: disabled)\n"
+        << "  --use-symmetry-breaking      Enable symmetry breaking\n"
+        << "  --use-heuristics             Enable heuristics while encoding\n"
         << "  -i, --incremental            Enable incremental mode\n"
         << "  -h, --help                   Show this help message\n";
 }
