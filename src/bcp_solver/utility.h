@@ -25,7 +25,9 @@ namespace BCPSolver
         TwoVariablesLess,
         OneVariableGreater,
         OneVariableLess,
-        StaircaseWithAuxiliaryVars,
+        StaircaseWithAuxiliaryVarsNoCache,
+        StaircaseWithAuxiliaryVarsWithCache,
+        StaircaseWithoutAuxiliaryVars
     };
 
     static constexpr double NO_TIME_LIMIT = std::numeric_limits<double>::lowest();

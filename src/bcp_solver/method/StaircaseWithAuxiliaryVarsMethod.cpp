@@ -24,7 +24,6 @@ void BCPSolver::StaircaseWithAuxiliaryVarsMethod::first_constraint()
             {
                 vars.push_back(x[{i, c}]);
             }
-            // CardEncoder::seqcounter_encode_equals1(&sat_solver, vars);
             sat_solver.encode_equals_k(vars, 1);
             continue;
         }
@@ -47,7 +46,6 @@ void BCPSolver::StaircaseWithAuxiliaryVarsMethod::first_constraint()
             {
                 vars.push_back(x[{i, c}]);
             }
-            // CardEncoder::seqcounter_encode_equals1(&sat_solver, vars);
             sat_solver.encode_equals_k(vars, 1);
         }
         else
@@ -59,7 +57,6 @@ void BCPSolver::StaircaseWithAuxiliaryVarsMethod::first_constraint()
             {
                 aux_vars.push_back(get_aux_var_for_staircase(i, fst, snd));
             }
-            // CardEncoder::seqcounter_encode_equals1(&sat_solver, aux_vars);
             sat_solver.encode_equals_k(aux_vars, 1);
         }
     }
@@ -67,6 +64,7 @@ void BCPSolver::StaircaseWithAuxiliaryVarsMethod::first_constraint()
 
 void BCPSolver::StaircaseWithAuxiliaryVarsMethod::second_constraint()
 {
+    used_tuple.clear();
     for (const auto& [u, v, weight] : graph->get_edges())
     {
         for (int c = 1; c < weight; c++)
@@ -455,12 +453,6 @@ std::vector<int> BCPSolver::StaircaseWithAuxiliaryVarsMethod::create_aux_var_for
     const std::vector<std::pair<int, int>>& group, const int bound)
 {
     std::vector<int> aux_vars;
-    // const auto tuple = std::make_tuple(node, group[0].first, group[0].second, bound);
-    // if (used_tuple.contains(tuple))
-    // {
-    //     aux_vars.push_back(used_tuple[tuple]);
-    //     return aux_vars;
-    // }
     const int s = sat_solver.create_new_variable();
     sat_solver.add_clause(
         get_aux_var_for_staircase(node, group[0].first, bound),
@@ -474,9 +466,8 @@ std::vector<int> BCPSolver::StaircaseWithAuxiliaryVarsMethod::create_aux_var_for
         -s, get_aux_var_for_staircase(node, group[0].first, bound));
     sat_solver.add_clause(
         -s, -get_aux_var_for_staircase(node, group[0].second + 1, bound));
-    aux_vars.push_back(s);
 
-    // used_tuple[tuple] = s;
+    aux_vars.push_back(s);
 
     return aux_vars;
 }
@@ -485,13 +476,6 @@ std::vector<int> BCPSolver::StaircaseWithAuxiliaryVarsMethod::create_aux_var_for
     const std::vector<std::pair<int, int>>& group, const int bound)
 {
     std::vector<int> aux_vars;
-    // const auto tuple = std::make_tuple(node, group[0].first, group[0].second, bound);
-    // if (used_tuple.contains(tuple))
-    // {
-    //     aux_vars.push_back(used_tuple[tuple]);
-    //     return aux_vars;
-    // }
-
     const int s = sat_solver.create_new_variable();
     sat_solver.add_clause(
         get_aux_var_for_staircase(node, bound, group[0].second),
@@ -505,36 +489,67 @@ std::vector<int> BCPSolver::StaircaseWithAuxiliaryVarsMethod::create_aux_var_for
         -s, get_aux_var_for_staircase(node, bound, group[0].second));
     sat_solver.add_clause(
         -s, -get_aux_var_for_staircase(node, bound, group[0].first - 1));
-    aux_vars.push_back(s);
 
-    // used_tuple[tuple] = s;
+    aux_vars.push_back(s);
 
     return aux_vars;
 }
 
-std::vector<int> BCPSolver::StaircaseWithAuxiliaryVarsMethod::get_var_for_groups(int node,
+std::vector<int> BCPSolver::StaircaseWithAuxiliaryVarsMethod::get_var_for_groups(const int node,
     const std::vector<std::pair<int, int>>& group)
 {
     if (group.size() == 1)
     {
-        const int bound = find_group_bound(group[0].first, group[0].second, max_weight[node], span);
+        if (use_cache)
+        {
+            const int bound = find_group_bound(group[0].first, group[0].second, max_weight[node], span);
+            const auto tuple_key = std::make_tuple(node, group[0].first, group[0].second, bound);
 
-        if (group[0].second < max_weight[node])
-        {
-            const int new_bound = max_weight[node];
-            return create_aux_var_for_groups_backward(node, group, new_bound);
+            if (used_tuple.contains(tuple_key))
+            {
+                return {used_tuple[tuple_key]};
+            }
+
+            if (group[0].second < max_weight[node])
+            {
+                const int new_bound = max_weight[node];
+                used_tuple[tuple_key] = create_aux_var_for_groups_backward(node, group, new_bound)[0];
+                return {used_tuple[tuple_key]};
+            }
+            if ((span - 1) / max_weight[node] * max_weight[node] + 1 < group[0].first)
+            {
+                const int new_bound = ((span - 1) / max_weight[node]) * max_weight[node] + 1;
+                used_tuple[tuple_key] = create_aux_var_for_groups_forward(node, group, new_bound)[0];
+                return {used_tuple[tuple_key]};
+            }
+            if (bound != group[0].first && bound != group[0].second)
+            {
+                used_tuple[tuple_key] = create_aux_var_for_groups_backward(node, group, bound)[0];
+                return {used_tuple[tuple_key]};
+            }
         }
-        if ((span - 1) / max_weight[node] * max_weight[node] + 1 < group[0].first)
+        else
         {
-            const int new_bound = ((span - 1) / max_weight[node]) * max_weight[node] + 1;
-            return create_aux_var_for_groups_forward(node, group, new_bound);
-        }
-        if (bound != group[0].first && bound != group[0].second)
-        {
-            return create_aux_var_for_groups_backward(node, group, bound);
+            const int bound = find_group_bound(group[0].first, group[0].second, max_weight[node], span);
+
+            if (group[0].second < max_weight[node])
+            {
+                const int new_bound = max_weight[node];
+                return create_aux_var_for_groups_backward(node, group, new_bound);
+            }
+            if ((span - 1) / max_weight[node] * max_weight[node] + 1 < group[0].first)
+            {
+                const int new_bound = ((span - 1) / max_weight[node]) * max_weight[node] + 1;
+                return create_aux_var_for_groups_forward(node, group, new_bound);
+            }
+            if (bound != group[0].first && bound != group[0].second)
+            {
+                return create_aux_var_for_groups_backward(node, group, bound);
+            }
         }
         return {get_aux_var_for_staircase(node, group[0].first, group[0].second)};
     }
+
     return {
         get_aux_var_for_staircase(node, group[0].first, group[0].second),
         get_aux_var_for_staircase(node, group[1].first, group[1].second)

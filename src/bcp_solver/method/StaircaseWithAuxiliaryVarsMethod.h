@@ -9,18 +9,22 @@
 
 namespace BCPSolver
 {
+    class StaircaseWithoutAuxiliaryVarsMethod;
+
     class StaircaseWithAuxiliaryVarsMethod : public BCPSolver
     {
-    private:
+    protected:
         std::map<std::tuple<int, int, int>, int> staircase_aux_vars{};
         std::map<std::tuple<int, int, int, int>, int> used_tuple;
         std::vector<int> max_weight{std::vector(graph->get_number_of_nodes(), 0)};
+
+        bool use_cache{};
 
         void symmetry_breaking();
 
         void first_constraint();
 
-        void second_constraint();
+        virtual void second_constraint();
 
         void encode() override;
 
@@ -32,8 +36,9 @@ namespace BCPSolver
 
         explicit StaircaseWithAuxiliaryVarsMethod(const Graph* graph, const int upper_bound,
                                                   const bool use_symmetry_breaking,
-                                                  const bool use_heuristic) : BCPSolver(
-            graph, upper_bound, use_symmetry_breaking, use_heuristic)
+                                                  const bool use_heuristic,
+                                                  const bool use_cache) : BCPSolver(
+                graph, upper_bound, use_symmetry_breaking, use_heuristic), use_cache(use_cache)
         {
         }
 
@@ -53,6 +58,7 @@ namespace BCPSolver
 
         std::vector<int>
         create_aux_var_for_groups_backward(int node, const std::vector<std::pair<int, int>>& group, int bound);
+
         std::vector<int>
         create_aux_var_for_groups_forward(int node, const std::vector<std::pair<int, int>>& group, int bound);
 

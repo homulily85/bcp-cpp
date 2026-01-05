@@ -35,6 +35,8 @@ set(METHOD_SOURCES
         src/bcp_solver/method/OneVarLessMethod.h
         src/bcp_solver/method/StaircaseWithAuxiliaryVarsMethod.cpp
         src/bcp_solver/method/StaircaseWithAuxiliaryVarsMethod.h
+        src/bcp_solver/method/StaircaseWithoutAuxiliaryVarsMethod.cpp
+        src/bcp_solver/method/StaircaseWithoutAuxiliaryVarsMethod.h
 )
 
 set(ENCODER_SOURCES

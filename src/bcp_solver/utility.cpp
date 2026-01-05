@@ -138,7 +138,7 @@ void BCPSolver::ArgParser::printUsage(const char* programName)
         << "Arguments:\n"
         << "  <filename>                   Path to the input file\n"
         << "  <method>                     Method for solving: 'one-var-greater', "
-        "'one-var-less','two-vars-greater', 'two-vars-less', 'staircase-aux'\n\n"
+        "'one-var-less','two-vars-greater', 'two-vars-less', 'staircase-aux-no-cache', 'staircase-aux-with-cache', 'staircase-no-aux'\n\n"
         << "Options:\n"
         << "  -t, --time_limit <int>       Set time limit\n"
         << "  -ub, --upper_bound <int>     Set preferred upper bound\n"
@@ -244,15 +244,24 @@ BCPSolver::ProgramConfig BCPSolver::ArgParser::parse(int argc, char* argv[])
                 {
                     config.solving_method = TwoVariablesLess;
                 }
-                else if (arg == "staircase-aux")
+                else if (arg == "staircase-aux-no-cache")
                 {
-                    config.solving_method = StaircaseWithAuxiliaryVars;
+                    config.solving_method = StaircaseWithAuxiliaryVarsNoCache;
+                }
+                else if (arg == "staircase-aux-with-cache")
+                {
+                    config.solving_method = StaircaseWithAuxiliaryVarsWithCache;
+                }
+                else if (arg == "staircase-no-aux")
+                {
+                    config.solving_method = StaircaseWithoutAuxiliaryVars;
                 }
                 else
                 {
                     throw std::invalid_argument(
                         "Invalid method: " + arg +
-                        ". Expected 'one-var-greater', 'one-var-less','two-vars-greater', 'two-vars-less', 'staircase-aux'.");
+                        ". Expected 'one-var-greater', 'one-var-less','two-vars-greater', 'two-vars-less', 'staircase-aux-no-cahe', "
+                        "'staircase-aux-with-cache, 'staircase-no-aux'.");
                 }
                 methodFound = true;
             }

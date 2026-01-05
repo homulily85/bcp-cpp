@@ -15,8 +15,15 @@
             color: #1f2937;
         }
 
-        h1 { margin-top: 0; }
-        h2 { margin-top: 32px; margin-bottom: 16px; font-size: 1.25rem; }
+        h1 {
+            margin-top: 0;
+        }
+
+        h2 {
+            margin-top: 32px;
+            margin-bottom: 16px;
+            font-size: 1.25rem;
+        }
 
         /* --- Controls --- */
         .mode-toggle {
@@ -29,8 +36,13 @@
             border-radius: 8px;
             width: fit-content;
         }
-        
-        label { cursor: pointer; display: flex; align-items: center; gap: 6px; }
+
+        label {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
 
         select {
             padding: 8px 12px;
@@ -41,15 +53,19 @@
             min-width: 250px;
         }
 
-        button#addCompare {
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        button {
             display: inline-flex;
             align-items: center;
             gap: 8px;
             padding: 10px 16px;
             font-size: 14px;
             font-weight: 600;
-            background-color: #2563eb;
-            color: #ffffff;
             border: none;
             border-radius: 6px;
             cursor: pointer;
@@ -57,8 +73,23 @@
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
         }
 
-        button#addCompare:hover { background-color: #1d4ed8; }
-        button#addCompare:active { background-color: #1e40af; }
+        button#addCompare {
+            background-color: #2563eb;
+            color: #ffffff;
+        }
+
+        button#addCompare:hover {
+            background-color: #1d4ed8;
+        }
+
+        button#addAllCompare {
+            background-color: #059669;
+            color: #ffffff;
+        }
+
+        button#addAllCompare:hover {
+            background-color: #047857;
+        }
 
         .compare-selectors {
             display: flex;
@@ -75,32 +106,33 @@
             border: 1px solid #e5e7eb;
             border-radius: 8px;
             background: white;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             margin-bottom: 24px;
-            position: relative; /* Context for absolute positioning if needed */
+            position: relative;
         }
 
         table {
-            border-collapse: separate; /* Required for sticky headers sometimes */
+            border-collapse: separate;
             border-spacing: 0;
             font-size: 13px;
             white-space: nowrap;
             min-width: 100%;
         }
 
-        th, td {
+        th,
+        td {
             border: 1px solid #e5e7eb;
             padding: 10px 14px;
         }
 
         /* Default align for data is right (numbers) */
-        td { text-align: right; }
+        td {
+            text-align: right;
+        }
 
         /* --- Header Styling --- */
-        
-        /* Ensure ALL headers are center aligned */
-        th { 
-            text-align: center !important; 
+        th {
+            text-align: center !important;
             vertical-align: middle;
         }
 
@@ -123,8 +155,6 @@
         }
 
         /* --- Sticky Columns Fix --- */
-
-        /* 1. Stick the 'Name' header (First TH of First Row) */
         #detailTable thead tr:first-child th:first-child {
             position: sticky;
             left: 0;
@@ -133,27 +163,19 @@
             border-right: 2px solid #d1d5db;
         }
 
-        /* 2. Stick the 'Name' data cells (First TD of every body row) */
         #detailTable tbody td:first-child {
             position: sticky;
             left: 0;
             z-index: 10;
             background-color: white;
             border-right: 2px solid #d1d5db;
-            text-align: left; /* Force name to be left-aligned */
+            text-align: left;
             font-weight: 500;
         }
 
-        /* 3. CRITICAL FIX: Ensure the first cell of the SECOND header row (the "1") 
-              does NOT stick. It was catching the generic th:first-child rule before. */
         #detailTable thead tr:nth-child(2) th:first-child {
-            position: static; 
+            position: static;
             border-left: 1px solid #e5e7eb;
-        }
-
-        /* --- Visual Separators --- */
-        .group-start {
-            border-left: 2px solid #9ca3af !important;
         }
 
         /* --- Legend --- */
@@ -167,13 +189,7 @@
             border: 1px solid #dbeafe;
             border-radius: 6px;
         }
-        .legend-item {
-            font-size: 14px;
-            color: #1e3a8a;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+
         .legend-badge {
             display: inline-flex;
             align-items: center;
@@ -188,7 +204,9 @@
             flex-shrink: 0;
         }
 
-        .hidden { display: none; }
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 
@@ -198,7 +216,7 @@
 
     <div class="mode-toggle">
         <label><input type="radio" name="mode" value="single" checked> Single file</label>
-        <label><input type="radio" name="mode" value="compare"> Compare (max 4)</label>
+        <label><input type="radio" name="mode" value="compare"> Compare</label>
     </div>
 
     <section id="singleMode">
@@ -206,35 +224,50 @@
             <strong>Choose file:</strong>
             <select id="singleSelect">
                 <option value="">-- select file --</option>
-                <option value="BCP_one-var-greater_2026-01-01-08-40-15.csv">BCP_one-var-greater_2026-01-01-08-40-15.csv</option>
-                <option value="BCP_one-var-greater_incremental_2026-01-01-10-06-43.csv">BCP_one-var-greater_incremental_2026-01-01-10-06-43.csv</option>
-                <option value="BCP_one-var-greater_symmetry-breaking_2026-01-01-10-54-03.csv">BCP_one-var-greater_symmetry-breaking_2026-01-01-10-54-03.csv</option>
-                <option value="BCP_one-var-less_2026-01-01-03-47-16.csv">BCP_one-var-less_2026-01-01-03-47-16.csv</option>
-                <option value="BCP_one-var-less_incremental_2026-01-01-05-16-55.csv">BCP_one-var-less_incremental_2026-01-01-05-16-55.csv</option>
-                <option value="BCP_one-var-less_symmetry-breaking_2026-01-01-06-30-14.csv">BCP_one-var-less_symmetry-breaking_2026-01-01-06-30-14.csv</option>
-                <option value="BCP_staircase-aux_2026-01-01-13-09-12.csv">BCP_staircase-aux_2026-01-01-13-09-12.csv</option>
-                <option value="BCP_staircase-aux_heuristic_2026-01-02-18-38-58.csv">BCP_staircase-aux_heuristic_2026-01-02-18-38-58.csv</option>
-                <option value="BCP_staircase-aux_symmetry-breaking_2026-01-01-14-12-53.csv">BCP_staircase-aux_symmetry-breaking_2026-01-01-14-12-53.csv</option>
-                <option value="BCP_staircase-aux_symmetry-breaking_heuristic_2026-01-01-15-23-34.csv">BCP_staircase-aux_symmetry-breaking_heuristic_2026-01-01-15-23-34.csv</option>
-                <option value="BCP_two-vars-greater_2026-01-02-08-37-24.csv">BCP_two-vars-greater_2026-01-02-08-37-24.csv</option>
-                <option value="BCP_two-vars-greater_heuristic_2026-01-02-10-21-10.csv">BCP_two-vars-greater_heuristic_2026-01-02-10-21-10.csv</option>
-                <option value="BCP_two-vars-greater_heuristic_incremental_2026-01-02-13-53-00.csv">BCP_two-vars-greater_heuristic_incremental_2026-01-02-13-53-00.csv</option>
-                <option value="BCP_two-vars-greater_incremental_2026-01-02-11-46-33.csv">BCP_two-vars-greater_incremental_2026-01-02-11-46-33.csv</option>
-                <option value="BCP_two-vars-greater_symmetry-breaking_2026-01-02-09-28-53.csv">BCP_two-vars-greater_symmetry-breaking_2026-01-02-09-28-53.csv</option>
-                <option value="BCP_two-vars-greater_symmetry-breaking_heuristic_2026-01-02-12-32-07.csv">BCP_two-vars-greater_symmetry-breaking_heuristic_2026-01-02-12-32-07.csv</option>
-                <option value="BCP_two-vars-greater_symmetry-breaking_heuristic_incremental_2026-01-02-16-39-34.csv">BCP_two-vars-greater_symmetry-breaking_heuristic_incremental_2026-01-02-16-39-34.csv</option>
-                <option value="BCP_two-vars-greater_symmetry-breaking_incremental_2026-01-02-15-16-40.csv">BCP_two-vars-greater_symmetry-breaking_incremental_2026-01-02-15-16-40.csv</option>
-                <option value="BCP_two-vars-less_2026-01-01-23-23-52.csv">BCP_two-vars-less_2026-01-01-23-23-52.csv</option>
-                <option value="BCP_two-vars-less_heuristic_2026-01-02-01-03-14.csv">BCP_two-vars-less_heuristic_2026-01-02-01-03-14.csv</option>
-                <option value="BCP_two-vars-less_heuristic_incremental_2026-01-02-04-47-48.csv">BCP_two-vars-less_heuristic_incremental_2026-01-02-04-47-48.csv</option>
-                <option value="BCP_two-vars-less_incremental_2026-01-02-02-31-41.csv">BCP_two-vars-less_incremental_2026-01-02-02-31-41.csv</option>
-                <option value="BCP_two-vars-less_symmetry-breaking_2026-01-02-00-10-55.csv">BCP_two-vars-less_symmetry-breaking_2026-01-02-00-10-55.csv</option>
-                <option value="BCP_two-vars-less_symmetry-breaking_heuristic_2026-01-02-03-23-13.csv">BCP_two-vars-less_symmetry-breaking_heuristic_2026-01-02-03-23-13.csv</option>
-                <option value="BCP_two-vars-less_symmetry-breaking_heuristic_incremental_2026-01-02-07-44-04.csv">BCP_two-vars-less_symmetry-breaking_heuristic_incremental_2026-01-02-07-44-04.csv</option>
-                <option value="BCP_two-vars-less_symmetry-breaking_incremental_2026-01-02-06-10-45.csv">BCP_two-vars-less_symmetry-breaking_incremental_2026-01-02-06-10-45.csv</option>
+                <option value="1G-I-0-0_2026-01-01-10-06-43.csv">1G-I-0-0_2026-01-01-10-06-43.csv</option>
+                <option value="1G-I-S-0_2026-01-04-12-44-02.csv">1G-I-S-0_2026-01-04-12-44-02.csv</option>
+                <option value="1G-N-0-0_2026-01-01-08-40-15.csv">1G-N-0-0_2026-01-01-08-40-15.csv</option>
+                <option value="1G-N-S-0_2026-01-01-10-54-03.csv">1G-N-S-0_2026-01-01-10-54-03.csv</option>
+                <option value="1L-I-0-0_2026-01-01-05-16-55.csv">1L-I-0-0_2026-01-01-05-16-55.csv</option>
+                <option value="1L-I-S-0_2026-01-04-11-15-32.csv">1L-I-S-0_2026-01-04-11-15-32.csv</option>
+                <option value="1L-N-0-0_2026-01-01-03-47-16.csv">1L-N-0-0_2026-01-01-03-47-16.csv</option>
+                <option value="1L-N-S-0_2026-01-01-06-30-14.csv">1L-N-S-0_2026-01-01-06-30-14.csv</option>
+                <option value="2G-I-0-0_2026-01-02-11-46-33.csv">2G-I-0-0_2026-01-02-11-46-33.csv</option>
+                <option value="2G-I-0-P_2026-01-02-13-53-00.csv">2G-I-0-P_2026-01-02-13-53-00.csv</option>
+                <option value="2G-I-S-0_2026-01-02-15-16-40.csv">2G-I-S-0_2026-01-02-15-16-40.csv</option>
+                <option value="2G-I-S-P_2026-01-02-16-39-34.csv">2G-I-S-P_2026-01-02-16-39-34.csv</option>
+                <option value="2G-N-0-0_2026-01-02-08-37-24.csv">2G-N-0-0_2026-01-02-08-37-24.csv</option>
+                <option value="2G-N-0-P_2026-01-02-10-21-10.csv">2G-N-0-P_2026-01-02-10-21-10.csv</option>
+                <option value="2G-N-S-0_2026-01-02-09-28-53.csv">2G-N-S-0_2026-01-02-09-28-53.csv</option>
+                <option value="2G-N-S-P_2026-01-02-12-32-07.csv">2G-N-S-P_2026-01-02-12-32-07.csv</option>
+                <option value="2L-I-0-0_2026-01-02-02-31-41.csv">2L-I-0-0_2026-01-02-02-31-41.csv</option>
+                <option value="2L-I-0-P_2026-01-02-04-47-48.csv">2L-I-0-P_2026-01-02-04-47-48.csv</option>
+                <option value="2L-I-S-0_2026-01-02-06-10-45.csv">2L-I-S-0_2026-01-02-06-10-45.csv</option>
+                <option value="2L-I-S-P_2026-01-02-07-44-04.csv">2L-I-S-P_2026-01-02-07-44-04.csv</option>
+                <option value="2L-N-0-0_2026-01-01-23-23-52.csv">2L-N-0-0_2026-01-01-23-23-52.csv</option>
+                <option value="2L-N-0-P_2026-01-02-01-03-14.csv">2L-N-0-P_2026-01-02-01-03-14.csv</option>
+                <option value="2L-N-S-0_2026-01-02-00-10-55.csv">2L-N-S-0_2026-01-02-00-10-55.csv</option>
+                <option value="2L-N-S-P_2026-01-02-03-23-13.csv">2L-N-S-P_2026-01-02-03-23-13.csv</option>
+                <option value="X-N-0-0_2026-01-05-14-30-11.csv">X-N-0-0_2026-01-05-14-30-11.csv</option>
+                <option value="X-N-0-P_2026-01-05-17-11-58.csv">X-N-0-P_2026-01-05-17-11-58.csv</option>
+                <option value="X-N-S-0_2026-01-05-15-53-09.csv">X-N-S-0_2026-01-05-15-53-09.csv</option>
+                <option value="X-N-S-P_2026-01-05-18-30-23.csv">X-N-S-P_2026-01-05-18-30-23.csv</option>
+                <option value="Xa(cache)-N-0-0_2026-01-05-05-18-16.csv">Xa(cache)-N-0-0_2026-01-05-05-18-16.csv</option>
+                <option value="Xa(cache)-N-0-P_2026-01-05-07-56-30.csv">Xa(cache)-N-0-P_2026-01-05-07-56-30.csv</option>
+                <option value="Xa(cache)-N-S-0_2026-01-05-06-58-49.csv">Xa(cache)-N-S-0_2026-01-05-06-58-49.csv</option>
+                <option value="Xa(cache)-N-S-P_2026-01-05-09-38-09.csv">Xa(cache)-N-S-P_2026-01-05-09-38-09.csv</option>
+                <option value="Xa(no-cache)-N-0-0_2026-01-01-13-09-12.csv">Xa(no-cache)-N-0-0_2026-01-01-13-09-12.csv
+                </option>
+                <option value="Xa(no-cache)-N-0-P_2026-01-02-18-38-58.csv">Xa(no-cache)-N-0-P_2026-01-02-18-38-58.csv
+                </option>
+                <option value="Xa(no-cache)-N-S-0_2026-01-01-14-12-53.csv">Xa(no-cache)-N-S-0_2026-01-01-14-12-53.csv
+                </option>
+                <option value="Xa(no-cache)-N-S-P_2026-01-01-15-23-34.csv">Xa(no-cache)-N-S-P_2026-01-01-15-23-34.csv
+                </option>
+
             </select>
         </label>
-        
+
         <h2>File Content</h2>
         <div class="table-container">
             <table id="singleTable"></table>
@@ -242,8 +275,13 @@
     </section>
 
     <section id="compareMode" class="hidden">
+
+        <div class="button-group">
+            <button id="addCompare">+ Add file</button>
+            <button id="addAllCompare">++ Add All Files</button>
+        </div>
+
         <div class="compare-selectors" id="compareSelectors"></div>
-        <button id="addCompare">Add file to compare</button>
 
         <h2>Summary Comparison</h2>
         <div class="table-container">
@@ -263,7 +301,7 @@
         </div>
 
         <h2>Detail Comparison</h2>
-        
+
         <div id="compareLegend" class="legend"></div>
 
         <div class="table-container">
@@ -277,34 +315,43 @@
     <script>
         const DATA_DIR = "data/";
         const FILES = [
-            "BCP_one-var-greater_2026-01-01-08-40-15.csv",
-            "BCP_one-var-greater_incremental_2026-01-01-10-06-43.csv",
-            "BCP_one-var-greater_symmetry-breaking_2026-01-01-10-54-03.csv",
-            "BCP_one-var-less_2026-01-01-03-47-16.csv",
-            "BCP_one-var-less_incremental_2026-01-01-05-16-55.csv",
-            "BCP_one-var-less_symmetry-breaking_2026-01-01-06-30-14.csv",
-            "BCP_staircase-aux_2026-01-01-13-09-12.csv",
-            "BCP_staircase-aux_heuristic_2026-01-02-18-38-58.csv",
-            "BCP_staircase-aux_symmetry-breaking_2026-01-01-14-12-53.csv",
-            "BCP_staircase-aux_symmetry-breaking_heuristic_2026-01-01-15-23-34.csv",
-            "BCP_two-vars-greater_2026-01-02-08-37-24.csv",
-            "BCP_two-vars-greater_heuristic_2026-01-02-10-21-10.csv",
-            "BCP_two-vars-greater_heuristic_incremental_2026-01-02-13-53-00.csv",
-            "BCP_two-vars-greater_incremental_2026-01-02-11-46-33.csv",
-            "BCP_two-vars-greater_symmetry-breaking_2026-01-02-09-28-53.csv",
-            "BCP_two-vars-greater_symmetry-breaking_heuristic_2026-01-02-12-32-07.csv",
-            "BCP_two-vars-greater_symmetry-breaking_heuristic_incremental_2026-01-02-16-39-34.csv",
-            "BCP_two-vars-greater_symmetry-breaking_incremental_2026-01-02-15-16-40.csv",
-            "BCP_two-vars-less_2026-01-01-23-23-52.csv",
-            "BCP_two-vars-less_heuristic_2026-01-02-01-03-14.csv",
-            "BCP_two-vars-less_heuristic_incremental_2026-01-02-04-47-48.csv",
-            "BCP_two-vars-less_incremental_2026-01-02-02-31-41.csv",
-            "BCP_two-vars-less_symmetry-breaking_2026-01-02-00-10-55.csv",
-            "BCP_two-vars-less_symmetry-breaking_heuristic_2026-01-02-03-23-13.csv",
-            "BCP_two-vars-less_symmetry-breaking_heuristic_incremental_2026-01-02-07-44-04.csv",
-            "BCP_two-vars-less_symmetry-breaking_incremental_2026-01-02-06-10-45.csv",
+            "1G-I-0-0_2026-01-01-10-06-43.csv",
+            "1G-I-S-0_2026-01-04-12-44-02.csv",
+            "1G-N-0-0_2026-01-01-08-40-15.csv",
+            "1G-N-S-0_2026-01-01-10-54-03.csv",
+            "1L-I-0-0_2026-01-01-05-16-55.csv",
+            "1L-I-S-0_2026-01-04-11-15-32.csv",
+            "1L-N-0-0_2026-01-01-03-47-16.csv",
+            "1L-N-S-0_2026-01-01-06-30-14.csv",
+            "2G-I-0-0_2026-01-02-11-46-33.csv",
+            "2G-I-0-P_2026-01-02-13-53-00.csv",
+            "2G-I-S-0_2026-01-02-15-16-40.csv",
+            "2G-I-S-P_2026-01-02-16-39-34.csv",
+            "2G-N-0-0_2026-01-02-08-37-24.csv",
+            "2G-N-0-P_2026-01-02-10-21-10.csv",
+            "2G-N-S-0_2026-01-02-09-28-53.csv",
+            "2G-N-S-P_2026-01-02-12-32-07.csv",
+            "2L-I-0-0_2026-01-02-02-31-41.csv",
+            "2L-I-0-P_2026-01-02-04-47-48.csv",
+            "2L-I-S-0_2026-01-02-06-10-45.csv",
+            "2L-I-S-P_2026-01-02-07-44-04.csv",
+            "2L-N-0-0_2026-01-01-23-23-52.csv",
+            "2L-N-0-P_2026-01-02-01-03-14.csv",
+            "2L-N-S-0_2026-01-02-00-10-55.csv",
+            "2L-N-S-P_2026-01-02-03-23-13.csv",
+            "X-N-0-0_2026-01-05-14-30-11.csv",
+            "X-N-0-P_2026-01-05-17-11-58.csv",
+            "X-N-S-0_2026-01-05-15-53-09.csv",
+            "X-N-S-P_2026-01-05-18-30-23.csv",
+            "Xa(cache)-N-0-0_2026-01-05-05-18-16.csv",
+            "Xa(cache)-N-0-P_2026-01-05-07-56-30.csv",
+            "Xa(cache)-N-S-0_2026-01-05-06-58-49.csv",
+            "Xa(cache)-N-S-P_2026-01-05-09-38-09.csv",
+            "Xa(no-cache)-N-0-0_2026-01-01-13-09-12.csv",
+            "Xa(no-cache)-N-0-P_2026-01-02-18-38-58.csv",
+            "Xa(no-cache)-N-S-0_2026-01-01-14-12-53.csv",
+            "Xa(no-cache)-N-S-P_2026-01-01-15-23-34.csv",
         ];
-        const MAX_COMPARE = 4;
 
         const singleMode = document.getElementById("singleMode");
         const compareMode = document.getElementById("compareMode");
@@ -315,10 +362,11 @@
         const detailTable = document.getElementById("detailTable");
         const compareLegend = document.getElementById("compareLegend");
         const addCompareBtn = document.getElementById("addCompare");
+        const addAllCompareBtn = document.getElementById("addAllCompare");
 
         const STATIC_COLS = ['name', 'V', 'E', 'upper_bound'];
         const METRIC_COLS = [
-            'variables', 'clauses', 'status', 'span', 
+            'variables', 'clauses', 'status', 'span',
             'encoding_time', 'total_solving_time', 'time_used', 'memory_usage'
         ];
 
@@ -377,9 +425,24 @@
 
         /* ---------------- COMPARE MODE ---------------- */
         addCompareBtn.addEventListener("click", () => {
-            if (compareSelectors.children.length >= MAX_COMPARE) return;
             const s = createCompareSelect();
             compareSelectors.appendChild(s);
+        });
+
+        // --- NEW: Add All Files Functionality ---
+        addAllCompareBtn.addEventListener("click", () => {
+            // Clear existing selectors to avoid duplicates
+            compareSelectors.innerHTML = "";
+
+            // Loop through all defined files
+            FILES.forEach(file => {
+                const s = createCompareSelect();
+                s.value = file; // Pre-select the file
+                compareSelectors.appendChild(s);
+            });
+
+            // Trigger the loading
+            loadComparison();
         });
 
         function createCompareSelect() {
@@ -422,7 +485,7 @@
 
                 // Render Summary
                 results.forEach((res, i) => summarize(res.filename, res.data, i + 1));
-                
+
                 // Render Detail
                 renderDetailComparison(results);
             });
@@ -431,7 +494,7 @@
         function summarize(filename, rows, index) {
             const avg = (k) => (rows.reduce((s, r) => s + (+r[k] || 0), 0) / rows.length).toFixed(2);
             const max = (k) => Math.max(...rows.map(r => +r[k] || 0)).toFixed(2);
-            
+
             const tr = document.createElement("tr");
             tr.innerHTML = `
                 <td style="text-align:left">
@@ -452,15 +515,15 @@
             const numRuns = results.length;
 
             // 1. Build Dictionary of Instances
-            const instanceMap = {}; 
+            const instanceMap = {};
             results.forEach((res, index) => {
                 res.data.forEach(row => {
                     const name = row['name'];
                     if (!name) return;
                     if (!instanceMap[name]) {
-                        instanceMap[name] = { 
-                            static: {}, 
-                            runs: new Array(numRuns).fill({}) 
+                        instanceMap[name] = {
+                            static: {},
+                            runs: new Array(numRuns).fill({})
                         };
                         STATIC_COLS.forEach(col => instanceMap[name].static[col] = row[col] || '-');
                     }
@@ -470,7 +533,7 @@
 
             // 2. Build Header
             const thead = document.createElement("thead");
-            
+
             // Header Row 1: Metrics
             const tr1 = document.createElement("tr");
             STATIC_COLS.forEach(col => {
@@ -491,10 +554,10 @@
 
             // Header Row 2: Run Indices (mapped to Legend)
             const tr2 = document.createElement("tr");
-            METRIC_COLS.forEach(metric => {
+            METRIC_COLS.forEach(() => {
                 results.forEach((res, i) => {
                     const th = document.createElement("th");
-                    th.textContent = `${i+1}`; // Matches legend badge
+                    th.textContent = `${i + 1}`; // Matches legend badge
                     th.title = res.filename;
                     if (i === 0) th.classList.add("group-start");
                     tr2.appendChild(th);
@@ -533,4 +596,5 @@
     </script>
 
 </body>
+
 </html>

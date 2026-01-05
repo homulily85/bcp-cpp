@@ -262,7 +262,7 @@ def main():
     parser = argparse.ArgumentParser(description='Benchmarking script for BCP solver.')
     parser.add_argument('solving_method', type=str,
                         choices=['one-var-less', 'one-var-greater', 'two-vars-less', 'two-vars-greater',
-                                 'staircase-aux'],
+                                 'staircase-aux-no-cache','staircase-aux-with-cache',"staircase-no-aux"],
                         help="Method for solving the BCP problem.")
     parser.add_argument('--time_limit', type=int, help='Time limit for solving one instance.',
                         default=None)
