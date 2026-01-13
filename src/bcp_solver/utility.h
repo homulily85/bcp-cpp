@@ -83,6 +83,7 @@ namespace BCPSolver
         int upper_bound;
         bool find_optimal;
         bool incremental_mode;
+        std::string variable_for_incremental;
         bool use_symmetry_breaking;
         bool use_heuristics;
         SolvingMethod solving_method;

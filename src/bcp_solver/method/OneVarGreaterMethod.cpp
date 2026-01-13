@@ -100,13 +100,20 @@ void BCPSolver::OneVarGreaterMethod::create_variable()
     }
 }
 
-std::vector<int>* BCPSolver::OneVarGreaterMethod::create_assumptions()
+std::vector<int>* BCPSolver::OneVarGreaterMethod::create_assumptions(const std::string& variable_for_incremental)
 {
-    auto* assumptions = new std::vector<int>(graph->get_number_of_nodes());
-
-    for (int i = 0; i < graph->get_number_of_nodes(); i++)
+    if (variable_for_incremental == "y")
     {
-        (*assumptions)[i] = -y[{i, span}];
+        auto* assumptions = new std::vector<int>(graph->get_number_of_nodes());
+
+        for (int i = 0; i < graph->get_number_of_nodes(); i++)
+        {
+            (*assumptions)[i] = -y[{i, span}];
+        }
+        return assumptions;
     }
-    return assumptions;
+    else
+    {
+        throw std::runtime_error("Invalid variable for incremental in OneVarGreaterMethod.");
+    }
 }

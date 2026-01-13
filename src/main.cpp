@@ -16,7 +16,7 @@ int main(int argc, char* argv[])
         }
         auto* s = BCPSolver::BCPSolver::create_solver(config.solving_method, g, config.upper_bound,
                                                       config.use_symmetry_breaking, config.use_heuristics);;
-        s->solve(config.time_limit, config.find_optimal, config.incremental_mode);
+        s->solve(config.time_limit, config.find_optimal, config.incremental_mode, config.variable_for_incremental);
         for (auto stats = s->get_statistics(); const auto& [fst, snd] : stats)
         {
             std::cout << fst << ": " << snd << '\n';

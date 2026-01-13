@@ -154,9 +154,9 @@ BCPSolver::BCPSolver* BCPSolver::BCPSolver::create_solver(const SolvingMethod me
     case OneVariableLess:
         return new OneVarLessMethod(graph, upper_bound, use_symmetry_breaking, use_heuristic);
     case StaircaseWithAuxiliaryVarsNoCache:
-        return new StaircaseWithAuxiliaryVarsMethod(graph, upper_bound, use_symmetry_breaking, use_heuristic,false);
+        return new StaircaseWithAuxiliaryVarsMethod(graph, upper_bound, use_symmetry_breaking, use_heuristic, false);
     case StaircaseWithAuxiliaryVarsWithCache:
-        return new StaircaseWithAuxiliaryVarsMethod(graph, upper_bound, use_symmetry_breaking, use_heuristic,true);
+        return new StaircaseWithAuxiliaryVarsMethod(graph, upper_bound, use_symmetry_breaking, use_heuristic, true);
     case StaircaseWithoutAuxiliaryVars:
         return new StaircaseWithoutAuxiliaryVarsMethod(graph, upper_bound, use_symmetry_breaking, use_heuristic);
     default:
@@ -225,7 +225,8 @@ BCPSolver::SolverStatus BCPSolver::BCPSolver::optimal_solving_non_incremental(co
     return status;
 }
 
-BCPSolver::SolverStatus BCPSolver::BCPSolver::optimal_solving_incremental(const double time_limit)
+BCPSolver::SolverStatus BCPSolver::BCPSolver::optimal_solving_incremental(
+    const double time_limit, const std::string& variable_for_incremental)
 {
     int result{non_optimal_solving(time_limit)};
 
@@ -243,7 +244,7 @@ BCPSolver::SolverStatus BCPSolver::BCPSolver::optimal_solving_incremental(const 
 
     while (result == SATISFIABLE || result == CaDiCaL::Status::SATISFIABLE && span > lower_bound)
     {
-        const auto assumptions{create_assumptions()};
+        const auto assumptions{create_assumptions(variable_for_incremental)};
 
         for (const auto lit : *assumptions)
         {
@@ -278,7 +279,7 @@ BCPSolver::SolverStatus BCPSolver::BCPSolver::optimal_solving_incremental(const 
 }
 
 BCPSolver::SolverStatus BCPSolver::BCPSolver::solve(const double time_limit, const bool find_optimal,
-                                                    const bool incremental)
+                                                    const bool incremental, const std::string& variable_for_incremental)
 {
     if (!find_optimal)
     {
@@ -293,7 +294,7 @@ BCPSolver::SolverStatus BCPSolver::BCPSolver::solve(const double time_limit, con
 
         else
         {
-            return optimal_solving_incremental(time_limit);
+            return optimal_solving_incremental(time_limit, variable_for_incremental);
         }
     }
 }

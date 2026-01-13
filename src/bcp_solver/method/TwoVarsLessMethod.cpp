@@ -129,14 +129,41 @@ void BCPSolver::TwoVarsLessMethod::create_variable()
     }
 }
 
-std::vector<int>* BCPSolver::TwoVarsLessMethod::create_assumptions()
+std::vector<int>* BCPSolver::TwoVarsLessMethod::create_assumptions(const std::string& variable_for_incremental)
 {
-    auto* assumptions = new std::vector<int>(graph->get_number_of_nodes());
-
-    for (int i = 0; i < graph->get_number_of_nodes(); i++)
+    if (variable_for_incremental == "y")
     {
-        (*assumptions)[i] = y[{i, span - 1}];
-    }
+        auto* assumptions = new std::vector<int>(graph->get_number_of_nodes());
 
-    return assumptions;
+        for (int i = 0; i < graph->get_number_of_nodes(); i++)
+        {
+            (*assumptions)[i] = y[{i, span - 1}];
+        }
+        return assumptions;
+    }
+    else if (variable_for_incremental == "x")
+    {
+        auto* assumptions = new std::vector<int>(graph->get_number_of_nodes());
+
+        for (int i = 0; i < graph->get_number_of_nodes(); i++)
+        {
+            (*assumptions)[i] = -x[{i, span}];
+        }
+        return assumptions;
+    }
+    else if (variable_for_incremental == "both")
+    {
+        auto* assumptions = new std::vector<int>(graph->get_number_of_nodes());
+
+        for (int i = 0; i < graph->get_number_of_nodes(); i++)
+        {
+            (*assumptions)[i] = -x[{i, span}];
+            (*assumptions)[i] = y[{i, span - 1}];
+        }
+        return assumptions;
+    }
+    else
+    {
+        throw std::runtime_error("Invalid variable for incremental in TwoVarsLessMethod.");
+    }
 }

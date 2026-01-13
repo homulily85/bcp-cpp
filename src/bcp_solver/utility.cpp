@@ -136,17 +136,19 @@ void BCPSolver::ArgParser::printUsage(const char* programName)
 {
     std::cerr << "Usage: " << programName << " <filename> <method> [options]\n"
         << "Arguments:\n"
-        << "  <filename>                   Path to the input file\n"
-        << "  <method>                     Method for solving: 'one-var-greater', "
-        "'one-var-less','two-vars-greater', 'two-vars-less', 'staircase-aux-no-cache', 'staircase-aux-with-cache', 'staircase-no-aux'\n\n"
+        << "  <filename>                      Path to the input file\n"
+        << "  <method>                        Method for solving: '1G', '1L','2G', '2L', 'Xa(no-cache)', "
+        "'Xa(cache)', 'X'\n\n"
         << "Options:\n"
-        << "  -t, --time_limit <int>       Set time limit\n"
-        << "  -ub, --upper_bound <int>     Set preferred upper bound\n"
-        << "  --no-optimal                 Disable finding optimal value\n"
-        << "  --use-symmetry-breaking      Enable symmetry breaking\n"
-        << "  --use-heuristics             Enable heuristics while encoding\n"
-        << "  -i, --incremental            Enable incremental mode\n"
-        << "  -h, --help                   Show this help message\n";
+        << "  -t, --time_limit <int>          Set time limit\n"
+        << "  -ub, --upper_bound <int>        Set preferred upper bound\n"
+        << "  --no-optimal                    Disable finding optimal value\n"
+        << "  --use-symmetry-breaking         Enable symmetry breaking\n"
+        << "  --use-heuristics                Enable heuristics while encoding\n"
+        << "  -i, --incremental               Enable incremental mode\n"
+        << "  -v  --variable-for-incremental  Variables used in incremental: 'x, 'y', 'both'. You must specify this when"
+        " using incremental mode, but it will be ignored otherwise.\n"
+        << "  -h, --help                      Show this help message\n";
 }
 
 BCPSolver::ProgramConfig BCPSolver::ArgParser::parse(int argc, char* argv[])
@@ -214,6 +216,24 @@ BCPSolver::ProgramConfig BCPSolver::ArgParser::parse(int argc, char* argv[])
         {
             config.incremental_mode = true;
         }
+        else if (arg == "-v" || arg == "--variable-for-incremental")
+        {
+            if (i + 1 < argc)
+            {
+                if (std::string var = argv[++i]; var == "x" || var == "y" || var == "both")
+                {
+                    config.variable_for_incremental = var;
+                }
+                else
+                {
+                    throw std::invalid_argument(
+                        "Invalid variable for incremental: " + var +
+                        ". Expected 'x', 'y', or 'both'.");
+                }
+            }
+            else
+                throw std::invalid_argument("Missing value for variable for incremental");
+        }
         else if (arg[0] == '-')
         {
             throw std::invalid_argument("Unknown flag: " + arg);
@@ -228,31 +248,31 @@ BCPSolver::ProgramConfig BCPSolver::ArgParser::parse(int argc, char* argv[])
             }
             else if (!methodFound)
             {
-                if (arg == "one-var-greater")
+                if (arg == "1G")
                 {
                     config.solving_method = OneVariableGreater;
                 }
-                else if (arg == "two-vars-greater")
+                else if (arg == "2G")
                 {
                     config.solving_method = TwoVariablesGreater;
                 }
-                else if (arg == "one-var-less")
+                else if (arg == "1L")
                 {
                     config.solving_method = OneVariableLess;
                 }
-                else if (arg == "two-vars-less")
+                else if (arg == "2L")
                 {
                     config.solving_method = TwoVariablesLess;
                 }
-                else if (arg == "staircase-aux-no-cache")
+                else if (arg == "Xa(no-cache)")
                 {
                     config.solving_method = StaircaseWithAuxiliaryVarsNoCache;
                 }
-                else if (arg == "staircase-aux-with-cache")
+                else if (arg == "Xa(cache)")
                 {
                     config.solving_method = StaircaseWithAuxiliaryVarsWithCache;
                 }
-                else if (arg == "staircase-no-aux")
+                else if (arg == "X")
                 {
                     config.solving_method = StaircaseWithoutAuxiliaryVars;
                 }
@@ -260,8 +280,7 @@ BCPSolver::ProgramConfig BCPSolver::ArgParser::parse(int argc, char* argv[])
                 {
                     throw std::invalid_argument(
                         "Invalid method: " + arg +
-                        ". Expected 'one-var-greater', 'one-var-less','two-vars-greater', 'two-vars-less', 'staircase-aux-no-cahe', "
-                        "'staircase-aux-with-cache, 'staircase-no-aux'.");
+                        ". Expected '1G', '1L','2G', '2L', 'Xa(no-cache)','Xa(cache)', 'X'.");
                 }
                 methodFound = true;
             }

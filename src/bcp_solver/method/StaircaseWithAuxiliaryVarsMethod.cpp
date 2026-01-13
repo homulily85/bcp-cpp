@@ -147,9 +147,21 @@ void BCPSolver::StaircaseWithAuxiliaryVarsMethod::create_variable()
     }
 }
 
-std::vector<int>* BCPSolver::StaircaseWithAuxiliaryVarsMethod::create_assumptions()
+std::vector<int>* BCPSolver::StaircaseWithAuxiliaryVarsMethod::create_assumptions(const std::string& variable_for_incremental)
 {
-    throw std::runtime_error("This method does not support incremental solving");
+    if (variable_for_incremental =="x")
+    {
+        auto* assumptions = new std::vector<int>(graph->get_number_of_nodes());
+
+        for (int i = 0; i < graph->get_number_of_nodes(); i++)
+        {
+            (*assumptions)[i] = -x[{i, span}];
+        }
+        return assumptions;
+    } else
+    {
+        throw std::runtime_error("Invalid variable for incremental in StaircaseMethod.");
+    }
 }
 
 int BCPSolver::StaircaseWithAuxiliaryVarsMethod::get_aux_var_for_staircase(

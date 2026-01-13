@@ -30,7 +30,7 @@ namespace BCPSolver
 
         void create_variable() override;
 
-        std::vector<int>* create_assumptions() override;
+        std::vector<int>* create_assumptions(const std::string& variable_for_incremental) override;
 
         friend class BCPSolver;
 
