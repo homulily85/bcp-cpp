@@ -61,7 +61,14 @@ target_link_libraries(bcp PRIVATE ${CADICAL_LIB})
 enable_testing()
 
 add_executable(bcp_tests
-        test/test_bcp.cpp
+        test/test_one_var_greater.cpp
+        test/test_one_var_less.cpp
+        test/test_two_vars_greater.cpp
+        test/test_two_vars_less.cpp
+        test/test_staircase_aux_nocache.cpp
+        test/test_staircase_aux_cache.cpp
+        test/test_staircase_no_aux.cpp
+        # (header-only helper, no need to list)
         ${CORE_SOURCES}
         ${METHOD_SOURCES}
         ${ENCODER_SOURCES}

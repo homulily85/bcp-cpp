@@ -48,6 +48,7 @@ namespace BCPSolver
 
     public:
         BCPSolver(const BCPSolver& other) = delete;
+
         void operator=(const BCPSolver&) = delete;
 
         virtual ~BCPSolver() = default;
@@ -59,6 +60,7 @@ namespace BCPSolver
         SolverStatus non_optimal_solving(double time_limit);
 
         SolverStatus optimal_solving_non_incremental(double time_limit);
+
         SolverStatus optimal_solving_incremental(double time_limit);
 
         SolverStatus solve(double time_limit = NO_TIME_LIMIT, bool find_optimal = false, bool incremental = false);
