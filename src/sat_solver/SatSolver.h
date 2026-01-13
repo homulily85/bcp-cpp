@@ -2,11 +2,9 @@
 // Created by homulily85 on 11/29/25.
 //
 
-#ifndef BCP_BMCP_SATSOLVER_H
-#define BCP_BMCP_SATSOLVER_H
-#include "cadical.hpp"
+#ifndef BCP_SATSOLVER_H
+#define BCP_SATSOLVER_H
 
-#include <atomic>
 #include <chrono>
 #include <limits>
 #include <string>
@@ -18,50 +16,43 @@ namespace SATSolver
 {
     class SatSolver
     {
-    private:
+    protected:
         int number_of_clauses{};
         int number_of_variables{};
-        CaDiCaL::Solver* solver{new CaDiCaL::Solver()};
-        std::vector<int> last_feasible_model{};
         int status{};
         double time_accum{};
-
-        class AtomicTerminator final : public CaDiCaL::Terminator
-        {
-        public:
-            std::atomic<bool> force_terminate{false};
-
-            bool terminate() override
-            {
-                return force_terminate.load(std::memory_order_relaxed);
-            }
-        };
 
     public:
         SatSolver() = default;
 
-        ~SatSolver();
+        virtual ~SatSolver()=default;
 
         [[nodiscard]] int create_new_variable();
 
-        void add_clause(const std::vector<int>& clause);
+        virtual void add_clause(const std::vector<int>& clause)=0;
 
-        void add_clause(int l);
+        virtual void add_clause(int l)=0;
 
-        void add_clause(int l1, int l2);
+        virtual void add_clause(int l1, int l2)=0;
 
-        void add_clause(int l1, int l2, int l3);
+        virtual void add_clause(int l1, int l2, int l3)=0;
 
-        void add_clause(int l1, int l2, int l3, int l4);
+        virtual void add_clause(int l1, int l2, int l3, int l4)=0;
 
-        int solve(const std::vector<int>* assumptions = nullptr, double time_limit = NO_TIME_LIMIT);
+        virtual int solve(const std::vector<int>* assumptions, double time_limit)=0;
 
-        [[nodiscard]] std::unordered_map<std::string, double> get_statistics() const;
+        int solve() { return solve(nullptr, NO_TIME_LIMIT); }
 
-        void reset();
+        int solve(const std::vector<int>* assumptions) { return solve(assumptions, NO_TIME_LIMIT); }
+
+        int solve(const double time_limit) { return solve(nullptr, time_limit); }
+
+        [[nodiscard]] virtual std::unordered_map<std::string, double> get_statistics() const;
+
+        virtual void reset()=0;
 
         void encode_equals_k(const std::vector<int>& vars, int k);
     };
 } // namespace SATSolver
 
-#endif // BCP_BMCP_SATSOLVER_H
+#endif // BCP_SATSOLVER_H

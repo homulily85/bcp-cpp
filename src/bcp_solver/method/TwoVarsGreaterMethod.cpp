@@ -6,7 +6,7 @@
 
 void BCPSolver::TwoVarsGreaterMethod::symmetry_breaking()
 {
-    sat_solver.add_clause(-y[{graph->get_highest_degree_vertex(), span / 2 + 1}]);
+    sat_solver->add_clause(-y[{graph->get_highest_degree_vertex(), span / 2 + 1}]);
 }
 
 void BCPSolver::TwoVarsGreaterMethod::first_constraint()
@@ -17,14 +17,14 @@ void BCPSolver::TwoVarsGreaterMethod::first_constraint()
         {
             if (c == span)
             {
-                sat_solver.add_clause(-x[{i, c}], y[{i, c}]);
-                sat_solver.add_clause(x[{i, c}], -y[{i, c}]);
+                sat_solver->add_clause(-x[{i, c}], y[{i, c}]);
+                sat_solver->add_clause(x[{i, c}], -y[{i, c}]);
             }
             else
             {
-                sat_solver.add_clause(-x[{i, c}], y[{i, c}]);
-                sat_solver.add_clause(-x[{i, c}], -y[{i, c + 1}]);
-                sat_solver.add_clause(x[{i, c}], -y[{i, c}], y[{i, c + 1}]);
+                sat_solver->add_clause(-x[{i, c}], y[{i, c}]);
+                sat_solver->add_clause(-x[{i, c}], -y[{i, c + 1}]);
+                sat_solver->add_clause(x[{i, c}], -y[{i, c}], y[{i, c + 1}]);
             }
         }
     }
@@ -34,7 +34,7 @@ void BCPSolver::TwoVarsGreaterMethod::second_constraint()
 {
     for (int i = 0; i < graph->get_number_of_nodes(); i++)
     {
-        sat_solver.add_clause(y[{i, 1}]);
+        sat_solver->add_clause(y[{i, 1}]);
     }
 }
 
@@ -44,7 +44,7 @@ void BCPSolver::TwoVarsGreaterMethod::third_constraint()
     {
         for (int c = 2; c < span + 1; c++)
         {
-            sat_solver.add_clause(-y[{i, c}], y[{i, c - 1}]);
+            sat_solver->add_clause(-y[{i, c}], y[{i, c - 1}]);
         }
     }
 }
@@ -62,11 +62,11 @@ void BCPSolver::TwoVarsGreaterMethod::fourth_constraint()
                 {
                     if (c - 1 < 0 && c + 1 > span)
                     {
-                        sat_solver.add_clause(-x[{u, c}]);
+                        sat_solver->add_clause(-x[{u, c}]);
                     }
                     else
                     {
-                        sat_solver.add_clause(-x[{u, c}], -x[{v, c}]);
+                        sat_solver->add_clause(-x[{u, c}], -x[{v, c}]);
                     }
                 }
                 continue;
@@ -77,19 +77,19 @@ void BCPSolver::TwoVarsGreaterMethod::fourth_constraint()
         {
             if (c - weight < 0 && c + weight > span)
             {
-                sat_solver.add_clause(-x[{u, c}]);
+                sat_solver->add_clause(-x[{u, c}]);
             }
             else if (c - weight < 0)
             {
-                sat_solver.add_clause(-x[{u, c}], y[{v, c + weight}]);
+                sat_solver->add_clause(-x[{u, c}], y[{v, c + weight}]);
             }
             else if (c + weight > span)
             {
-                sat_solver.add_clause(-x[{u, c}], -y[{v, c - weight + 1}]);
+                sat_solver->add_clause(-x[{u, c}], -y[{v, c - weight + 1}]);
             }
             else
             {
-                sat_solver.add_clause(-x[{u, c}], y[{v, c + weight}], -y[{v, c - weight + 1}]);
+                sat_solver->add_clause(-x[{u, c}], y[{v, c + weight}], -y[{v, c - weight + 1}]);
             }
         }
     }
@@ -123,8 +123,8 @@ void BCPSolver::TwoVarsGreaterMethod::create_variable()
     {
         for (int c = 1; c < span + 1; c++)
         {
-            x.insert(std::pair<std::pair<int, int>, int>({i, c}, sat_solver.create_new_variable()));
-            y.insert(std::pair<std::pair<int, int>, int>({i, c}, sat_solver.create_new_variable()));
+            x.insert(std::pair<std::pair<int, int>, int>({i, c}, sat_solver->create_new_variable()));
+            y.insert(std::pair<std::pair<int, int>, int>({i, c}, sat_solver->create_new_variable()));
         }
     }
 }

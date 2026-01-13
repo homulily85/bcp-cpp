@@ -10,6 +10,8 @@
 #include <map>
 #include <utility>
 
+#include "sat_solver/Cadical.h"
+
 namespace BCPSolver
 {
     class BCPSolver
@@ -19,7 +21,8 @@ namespace BCPSolver
         int upper_bound{};
         int lower_bound{};
 
-        SATSolver::SatSolver sat_solver{SATSolver::SatSolver()};
+        std::unique_ptr<SATSolver::SatSolver> sat_solver{std::make_unique<SATSolver::Cadical>()};
+
         SolverStatus status{UNKNOWN};
 
         double encoding_time{};
