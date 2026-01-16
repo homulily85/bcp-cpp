@@ -140,12 +140,14 @@ void BCPSolver::ArgParser::printUsage(const char* programName)
         << "  <method>                        Method for solving: '1G', '1L','2G', '2L', 'Xa(no-cache)', "
         "'Xa(cache)', 'X'\n\n"
         << "Options:\n"
+        << "  --solver <SATSolver>            SAT solver to use: 'kissat' (default), 'cadical'\n"
         << "  -t, --time_limit <int>          Set time limit\n"
         << "  -ub, --upper_bound <int>        Set preferred upper bound\n"
         << "  --no-optimal                    Disable finding optimal value\n"
         << "  --use-symmetry-breaking         Enable symmetry breaking\n"
         << "  --use-heuristics                Enable heuristics while encoding\n"
-        << "  -i, --incremental               Enable incremental mode\n"
+        << "  -i, --incremental               Enable incremental mode. "
+           "Note: This flag requires '-v' to be set as well and does not support kissat.\n"
         << "  -v  --variable-for-incremental  Variables used in incremental: 'x, 'y', 'both'. You must specify this when"
         " using incremental mode, but it will be ignored otherwise.\n"
         << "  -h, --help                      Show this help message\n";
@@ -163,6 +165,26 @@ BCPSolver::ProgramConfig BCPSolver::ArgParser::parse(int argc, char* argv[])
         {
             printUsage(argv[0]);
             exit(0);
+        }
+        else if (arg == "--solver")
+        {
+            if (i + 1 < argc)
+            {
+                if (std::string solver = argv[++i]; solver == "kissat")
+                {
+                    config.solver = SATSolver::KISSAT;
+                }
+                else if (solver == "cadical")
+                {
+                    config.solver = SATSolver::CADICAL;
+                }
+                else
+                {
+                    throw std::invalid_argument("Invalid solver: " + solver + ". Expected 'kissat' or 'cadical'.");
+                }
+            }
+            else
+                throw std::invalid_argument("Missing value for solver");
         }
         else if (arg == "-t" || arg == "--time_limit")
         {

@@ -23,16 +23,18 @@ namespace BCPSolver::test
 
     inline std::unique_ptr<BCPSolver> make_solver(const SolvingMethod method,
                                                   const Graph* g,
+                                                  const SATSolver::SOLVER solver,
                                                   const int upper_bound,
                                                   const bool use_symmetry_breaking,
                                                   const bool use_heuristic)
     {
         return std::unique_ptr<BCPSolver>(
-            BCPSolver::create_solver(method, g, upper_bound, use_symmetry_breaking, use_heuristic));
+            BCPSolver::create_solver(method, g, solver, upper_bound, use_symmetry_breaking, use_heuristic));
     }
 
     inline void solve_expect(const SolvingMethod method,
                              const std::string& rel_graph_path,
+                             const SATSolver::SOLVER solver,
                              const int upper_bound,
                              const bool use_symmetry_breaking,
                              const bool use_heuristic,
@@ -45,7 +47,7 @@ namespace BCPSolver::test
         const auto g = load_graph(rel_graph_path);
         if (!g) return;
 
-        const auto s = make_solver(method, g.get(), upper_bound, use_symmetry_breaking, use_heuristic);
+        const auto s = make_solver(method, g.get(), solver, upper_bound, use_symmetry_breaking, use_heuristic);
         ASSERT_NE(s, nullptr);
 
         const auto status = s->solve(NO_TIME_LIMIT, find_optimal, incremental, variable_for_incremental);

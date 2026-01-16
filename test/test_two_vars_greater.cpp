@@ -5,14 +5,19 @@ using BCPSolver::test::solve_expect;
 
 TEST(TwoVariableGreaterEncodingTest, GEOM20_NonOptimal_DummyUpperBound)
 {
-    for (const bool symm : {false, true})
+    for (const auto& solver : {SATSolver::SOLVER::KISSAT, SATSolver::SOLVER::CADICAL})
     {
-        for (const bool heur : {false, true})
+        for (const bool symm : {false, true})
         {
-            constexpr int ub = 100;
-            SCOPED_TRACE(std::string("symmetry=") + (symm ? "on" : "off") + " / heuristic=" + (heur ? "on" : "off"));
-            solve_expect(BCPSolver::TwoVariablesGreater, "../dataset/GEOM20.col", ub, symm, heur, false, false, "",
-                         SolverStatus::SATISFIABLE, ub);
+            for (const bool heur : {false, true})
+            {
+                constexpr int ub = 100;
+                SCOPED_TRACE(
+                    std::string("symmetry=") + (symm ? "on" : "off") + " / heuristic=" + (heur ? "on" : "off"));
+                solve_expect(BCPSolver::TwoVariablesGreater, "../dataset/GEOM20.col", solver, ub, symm, heur, false,
+                             false, "",
+                             SolverStatus::SATISFIABLE, ub);
+            }
         }
     }
 }
@@ -30,16 +35,19 @@ TEST(TwoVariableGreaterEncodingTest, Optimal_NonIncremental_GEOM20_GEOM20a_GEOM2
         {"../dataset/GEOM20b.col", 13}
     };
 
-    for (const auto& [path, expected_span] : cases)
+    for (const auto& solver : {SATSolver::SOLVER::KISSAT, SATSolver::SOLVER::CADICAL})
     {
-        for (const bool symm : {false, true})
+        for (const auto& [path, expected_span] : cases)
         {
-            for (const bool heur : {false, true})
+            for (const bool symm : {false, true})
             {
-                SCOPED_TRACE(std::string(path) + " / symmetry=" + (symm ? "on" : "off") + " / heuristic=" +
-                    (heur ? "on" : "off"));
-                solve_expect(BCPSolver::TwoVariablesGreater, path, -1, symm, heur, true, false, "",
-                             SolverStatus::OPTIMAL, expected_span);
+                for (const bool heur : {false, true})
+                {
+                    SCOPED_TRACE(std::string(path) + " / symmetry=" + (symm ? "on" : "off") + " / heuristic=" +
+                        (heur ? "on" : "off"));
+                    solve_expect(BCPSolver::TwoVariablesGreater, path, solver, -1, symm, heur, true, false, "",
+                                 SolverStatus::OPTIMAL, expected_span);
+                }
             }
         }
     }
@@ -58,18 +66,22 @@ TEST(TwoVariableGreaterEncodingTest, Optimal_Incremental_GEOM20_GEOM20a_GEOM20b)
         {"../dataset/GEOM20a.col", 20},
         {"../dataset/GEOM20b.col", 13}
     };
-    for (const auto& [path, expected_span] : cases)
+
+    for (const auto& solver : {SATSolver::SOLVER::CADICAL})
     {
-        for (const bool symm : {false, true})
+        for (const auto& [path, expected_span] : cases)
         {
-            for (const bool heur : {false, true})
+            for (const bool symm : {false, true})
             {
-                for (const std::string variable_for_incremental : {"x", "y", "both"})
+                for (const bool heur : {false, true})
                 {
-                    SCOPED_TRACE(std::string(path) + " / symmetry=" + (symm ? "on" : "off") + " / heuristic=" +
-                        (heur ? "on" : "off") + " / variable_for_incremental=" + variable_for_incremental);
-                    solve_expect(BCPSolver::TwoVariablesGreater, path, -1, symm, heur, true, true,
-                                 variable_for_incremental, SolverStatus::OPTIMAL, expected_span);
+                    for (const std::string variable_for_incremental : {"x", "y", "both"})
+                    {
+                        SCOPED_TRACE(std::string(path) + " / symmetry=" + (symm ? "on" : "off") + " / heuristic=" +
+                            (heur ? "on" : "off") + " / variable_for_incremental=" + variable_for_incremental);
+                        solve_expect(BCPSolver::TwoVariablesGreater, path, solver, -1, symm, heur, true, true,
+                                     variable_for_incremental, SolverStatus::OPTIMAL, expected_span);
+                    }
                 }
             }
         }

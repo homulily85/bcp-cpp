@@ -34,11 +34,13 @@ namespace BCPSolver
 
         friend class BCPSolver;
 
-        explicit StaircaseWithAuxiliaryVarsMethod(const Graph* graph, const int upper_bound,
+        explicit StaircaseWithAuxiliaryVarsMethod(const Graph* graph,
+                                                  const SATSolver::SOLVER solver,
+                                                  const int upper_bound,
                                                   const bool use_symmetry_breaking,
                                                   const bool use_heuristic,
-                                                  const bool use_cache) : BCPSolver(
-                graph, upper_bound, use_symmetry_breaking, use_heuristic), use_cache(use_cache)
+                                                  const bool use_cache) :
+            BCPSolver(graph, solver, upper_bound, use_symmetry_breaking, use_heuristic), use_cache(use_cache)
         {
         }
 

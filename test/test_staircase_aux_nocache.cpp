@@ -5,15 +5,18 @@ using BCPSolver::test::solve_expect;
 
 TEST(StaircaseWithAuxiliaryVarsNoCacheEncodingTest, GEOM20_NonOptimal_DummyUpperBound)
 {
-    for (const bool symm : {false, true})
+    for (const auto& solver : {SATSolver::SOLVER::KISSAT, SATSolver::SOLVER::CADICAL})
     {
-        for (const bool heur : {false, true})
+        for (const bool symm : {false, true})
         {
-            constexpr int ub = 100;
-            SCOPED_TRACE(std::string(symm ? "symmetry=on" : "symmetry=off") + " / " +
-                (heur ? "heuristic=on" : "heuristic=off"));
-            solve_expect(BCPSolver::StaircaseWithAuxiliaryVarsNoCache, "../dataset/GEOM20.col", ub, symm, heur,
-                         false, false, "", SolverStatus::SATISFIABLE, ub);
+            for (const bool heur : {false, true})
+            {
+                constexpr int ub = 100;
+                SCOPED_TRACE(std::string(symm ? "symmetry=on" : "symmetry=off") + " / " +
+                    (heur ? "heuristic=on" : "heuristic=off"));
+                solve_expect(BCPSolver::StaircaseWithAuxiliaryVarsNoCache, "../dataset/GEOM20.col", solver, ub, symm,
+                             heur, false, false, "", SolverStatus::SATISFIABLE, ub);
+            }
         }
     }
 }
@@ -31,16 +34,19 @@ TEST(StaircaseWithAuxiliaryVarsNoCacheEncodingTest, Optimal_NonIncremental_GEOM2
         {"../dataset/GEOM20b.col", 13}
     };
 
-    for (const auto& [path, expected_span] : cases)
+    for (const auto& solver : {SATSolver::SOLVER::KISSAT, SATSolver::SOLVER::CADICAL})
     {
-        for (const bool symm : {false, true})
+        for (const auto& [path, expected_span] : cases)
         {
-            for (const bool heur : {false, true})
+            for (const bool symm : {false, true})
             {
-                SCOPED_TRACE(std::string(path) + " / symmetry=" + (symm ? "on" : "off") + " / heuristic=" +
-                    (heur ? "on" : "off"));
-                solve_expect(BCPSolver::StaircaseWithAuxiliaryVarsNoCache, path, -1, symm, heur, true, false, "",
-                             SolverStatus::OPTIMAL, expected_span);
+                for (const bool heur : {false, true})
+                {
+                    SCOPED_TRACE(std::string(path) + " / symmetry=" + (symm ? "on" : "off") + " / heuristic=" +
+                        (heur ? "on" : "off"));
+                    solve_expect(BCPSolver::StaircaseWithAuxiliaryVarsNoCache, path, solver, -1, symm, heur, true,
+                                 false, "", SolverStatus::OPTIMAL, expected_span);
+                }
             }
         }
     }
@@ -60,16 +66,19 @@ TEST(StaircaseWithAuxiliaryVarsNoCacheEncodingTest, Optimal_Incremental_GEOM20_G
         {"../dataset/GEOM20b.col", 13}
     };
 
-    for (const auto& [path, expected_span] : cases)
+    for (const auto& solver : {SATSolver::SOLVER::CADICAL})
     {
-        for (const bool symm : {false, true})
+        for (const auto& [path, expected_span] : cases)
         {
-            for (const bool heur : {false, true})
+            for (const bool symm : {false, true})
             {
-                SCOPED_TRACE(std::string(path) + " / symmetry=" + (symm ? "on" : "off") + " / heuristic=" +
-                    (heur ? "on" : "off"));
-                solve_expect(BCPSolver::StaircaseWithAuxiliaryVarsNoCache, path, -1, symm, heur, true, true, "x",
-                             SolverStatus::OPTIMAL, expected_span);
+                for (const bool heur : {false, true})
+                {
+                    SCOPED_TRACE(std::string(path) + " / symmetry=" + (symm ? "on" : "off") + " / heuristic=" +
+                        (heur ? "on" : "off"));
+                    solve_expect(BCPSolver::StaircaseWithAuxiliaryVarsNoCache, path, solver, -1, symm, heur, true, true,
+                                 "x", SolverStatus::OPTIMAL, expected_span);
+                }
             }
         }
     }

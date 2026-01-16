@@ -125,10 +125,22 @@ void BCPSolver::BCPSolver::calculate_upper_bound()
 }
 
 
-BCPSolver::BCPSolver::BCPSolver(const Graph* graph, const int upper_bound, const bool use_symmetry_breaking,
+BCPSolver::BCPSolver::BCPSolver(const Graph* graph, const SATSolver::SOLVER solver, const int upper_bound,
+                                const bool use_symmetry_breaking,
                                 const bool use_heuristic)
-    : graph(graph), upper_bound(upper_bound), use_symmetry_breaking(use_symmetry_breaking), use_heuristic(use_heuristic)
+    : graph(graph), upper_bound(upper_bound),
+      use_symmetry_breaking(use_symmetry_breaking),
+      use_heuristic(use_heuristic)
 {
+    if (solver == SATSolver::CADICAL)
+    {
+        sat_solver = std::make_unique<SATSolver::Cadical>();
+    }
+    else
+    {
+        sat_solver = std::make_unique<SATSolver::Kissat>();
+    }
+
     if (this->upper_bound < 0)
     {
         calculate_upper_bound();
@@ -139,6 +151,7 @@ BCPSolver::BCPSolver::BCPSolver(const Graph* graph, const int upper_bound, const
 
 BCPSolver::BCPSolver* BCPSolver::BCPSolver::create_solver(const SolvingMethod method,
                                                           const Graph* graph,
+                                                          const SATSolver::SOLVER solver,
                                                           const int upper_bound,
                                                           const bool use_symmetry_breaking,
                                                           const bool use_heuristic)
@@ -146,19 +159,22 @@ BCPSolver::BCPSolver* BCPSolver::BCPSolver::create_solver(const SolvingMethod me
     switch (method)
     {
     case TwoVariablesGreater:
-        return new TwoVarsGreaterMethod(graph, upper_bound, use_symmetry_breaking, use_heuristic);
+        return new TwoVarsGreaterMethod(graph, solver, upper_bound, use_symmetry_breaking, use_heuristic);
     case TwoVariablesLess:
-        return new TwoVarsLessMethod(graph, upper_bound, use_symmetry_breaking, use_heuristic);
+        return new TwoVarsLessMethod(graph, solver, upper_bound, use_symmetry_breaking, use_heuristic);
     case OneVariableGreater:
-        return new OneVarGreaterMethod(graph, upper_bound, use_symmetry_breaking, use_heuristic);
+        return new OneVarGreaterMethod(graph, solver, upper_bound, use_symmetry_breaking, use_heuristic);
     case OneVariableLess:
-        return new OneVarLessMethod(graph, upper_bound, use_symmetry_breaking, use_heuristic);
+        return new OneVarLessMethod(graph, solver, upper_bound, use_symmetry_breaking, use_heuristic);
     case StaircaseWithAuxiliaryVarsNoCache:
-        return new StaircaseWithAuxiliaryVarsMethod(graph, upper_bound, use_symmetry_breaking, use_heuristic, false);
+        return new StaircaseWithAuxiliaryVarsMethod(graph, solver, upper_bound, use_symmetry_breaking, use_heuristic,
+                                                    false);
     case StaircaseWithAuxiliaryVarsWithCache:
-        return new StaircaseWithAuxiliaryVarsMethod(graph, upper_bound, use_symmetry_breaking, use_heuristic, true);
+        return new StaircaseWithAuxiliaryVarsMethod(graph, solver, upper_bound, use_symmetry_breaking, use_heuristic,
+                                                    true);
     case StaircaseWithoutAuxiliaryVars:
-        return new StaircaseWithoutAuxiliaryVarsMethod(graph, upper_bound, use_symmetry_breaking, use_heuristic);
+        return new StaircaseWithoutAuxiliaryVarsMethod(graph, solver, upper_bound, use_symmetry_breaking,
+                                                       use_heuristic);
     default:
         throw std::invalid_argument("Invalid solving method");
     }

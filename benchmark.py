@@ -6,6 +6,7 @@ import os
 import subprocess
 import sys
 import time
+import traceback
 from pathlib import Path
 
 import pandas as pd
@@ -27,7 +28,8 @@ def parse_solver_output(output_text):
 
 def process_instance(solving_method: str, file_path: str, upper_bound=None, time_limit: int = None,
                      queue: multiprocessing.Queue = None, use_incremental_solving: bool = False,
-                     variable_for_incremental='x', use_symmetry_breaking: bool = False, use_heuristic: bool = False):
+                     variable_for_incremental='x', use_symmetry_breaking: bool = False, use_heuristic: bool = False,
+                     solver: str = 'kissat'):
     """
     Process a single instance of the given path.
     """
@@ -54,6 +56,9 @@ def process_instance(solving_method: str, file_path: str, upper_bound=None, time
 
         if use_heuristic:
             command.append("--use-heuristics")
+
+        command.append("--solver")
+        command.append(solver)
 
         result = subprocess.run(
             command,
@@ -82,11 +87,11 @@ def process_instance(solving_method: str, file_path: str, upper_bound=None, time
 
 
 def worker(args):
-    if len(args) == 7:
-        solving_method, file_path, time_limit, use_incremental_solving, variable_for_incremental, use_symmetry_breaking, use_heuristic = args
+    if len(args) == 8:
+        solving_method, file_path, time_limit, use_incremental_solving, variable_for_incremental, use_symmetry_breaking, use_heuristic, solver = args
         upper_bound = None
     else:
-        solving_method, file_path, upper_bound, time_limit, use_incremental_solving, variable_for_incremental, use_symmetry_breaking, use_heuristic = args
+        solving_method, file_path, upper_bound, time_limit, use_incremental_solving, variable_for_incremental, use_symmetry_breaking, use_heuristic, solver = args
 
     queue = multiprocessing.Queue()
     p = multiprocessing.Process(target=process_instance, kwargs={'solving_method': solving_method,
@@ -97,7 +102,8 @@ def worker(args):
                                                                  'use_incremental_solving': use_incremental_solving,
                                                                  'variable_for_incremental': variable_for_incremental,
                                                                  'use_symmetry_breaking': use_symmetry_breaking,
-                                                                 'use_heuristic': use_heuristic})
+                                                                 'use_heuristic': use_heuristic,
+                                                                 'solver': solver})
     p.start()
 
     peak_memory = 0
@@ -130,7 +136,8 @@ def worker(args):
 def benchmark(solving_method: str, time_limit: int = None, continue_from: str = None,
               num_concurrent_processes: int = 1, save_interval_seconds: int = 60,
               use_predefine_upper_bound: bool = False, use_incremental_solving: bool = False,
-              variable_for_incremental: str = 'x', use_symmetry_breaking: bool = False, use_heuristic: bool = False):
+              variable_for_incremental: str = 'x', use_symmetry_breaking: bool = False, use_heuristic: bool = False,
+              solver: str = 'kissat'):
     """
     Benchmark a dataset using concurrent.futures.ProcessPoolExecutor.
     Periodically exports partial results to avoid data loss from unexpected interruptions.
@@ -160,7 +167,8 @@ def benchmark(solving_method: str, time_limit: int = None, continue_from: str = 
                 use_incremental_solving,
                 variable_for_incremental,
                 use_symmetry_breaking,
-                use_heuristic
+                use_heuristic,
+                solver
             ))
     else:
         folder_path = Path(f"./dataset")
@@ -171,7 +179,7 @@ def benchmark(solving_method: str, time_limit: int = None, continue_from: str = 
                 continue
             tasks.append(
                 (solving_method, f'{folder_path}/{file}', time_limit, use_incremental_solving, variable_for_incremental,
-                 use_symmetry_breaking, use_heuristic))
+                 use_symmetry_breaking, use_heuristic, solver))
 
     executor = concurrent.futures.ProcessPoolExecutor(max_workers=num_concurrent_processes)
     futures = []
@@ -193,15 +201,16 @@ def benchmark(solving_method: str, time_limit: int = None, continue_from: str = 
                 current_time = time.time()
                 if current_time - last_save_time >= save_interval_seconds:
                     export_result(solving_method, dataset_stats, use_incremental_solving, variable_for_incremental,
-                                  use_symmetry_breaking, use_heuristic, suffix="partial")
+                                  use_symmetry_breaking, use_heuristic, solver, suffix="partial")
                     last_save_time = current_time
 
             except Exception:
+                traceback.print_exc()
                 for f in futures:
                     f.cancel()
                 executor.shutdown(wait=False, cancel_futures=True)
                 export_result(solving_method, dataset_stats, use_incremental_solving, variable_for_incremental,
-                              use_symmetry_breaking, use_heuristic, suffix="crash")
+                              use_symmetry_breaking, use_heuristic, solver, suffix="crash")
                 sys.exit(1)
 
     except KeyboardInterrupt:
@@ -209,16 +218,16 @@ def benchmark(solving_method: str, time_limit: int = None, continue_from: str = 
             f.cancel()
         executor.shutdown(wait=False, cancel_futures=True)
         export_result(solving_method, dataset_stats, use_incremental_solving, variable_for_incremental,
-                      use_symmetry_breaking, use_heuristic, suffix="interrupted")
+                      use_symmetry_breaking, use_heuristic, solver, suffix="interrupted")
         sys.exit(1)
 
     # Final export at the end
     export_result(solving_method, dataset_stats, use_incremental_solving, variable_for_incremental,
-                  use_symmetry_breaking, use_heuristic)
+                  use_symmetry_breaking, use_heuristic, solver)
 
 
 def export_result(solving_method: str, stat, use_incremental_solving, variable_for_incremental, use_symmetry_breaking,
-                  use_heuristic, suffix=None):
+                  use_heuristic, solver, suffix=None):
     """
     Export both detailed results and summary reports.
     `suffix` is appended to the filename to indicate partial or crash saves.
@@ -244,6 +253,8 @@ def export_result(solving_method: str, stat, use_incremental_solving, variable_f
     else:
         file_name += '-0'
 
+    file_name += f'_{solver}'
+
     result_path = f'./result/{file_name}{suffix}_{timestamp}.csv'
 
     stat.to_csv(result_path, index=False)
@@ -268,18 +279,20 @@ def main():
                         help='Use incremental solving strategy (if applicable).')
     parser.add_argument('--variable_for_incremental', type=str, default='x',
                         choices=['x', 'y', 'both'],
-                        help='Use incremental solving strategy (if applicable).')
+                        help='Variable to use for incremental solving (if applicable).')
     parser.add_argument('--use_symmetry_breaking', action='store_true', default=False,
                         help='Use symmetry breaking in the solving process')
     parser.add_argument('--use_heuristic', action='store_true', default=False,
                         help='Enable heuristics while encoding, if applicable')
+    parser.add_argument('--solver', type=str, choices=['kissat', 'cadical'], default='kissat',
+                        help='The underlying SAT solver to use.')
 
     args = parser.parse_args()
 
     benchmark(args.solving_method, args.time_limit, args.continue_from,
               args.num_concurrent_processes, args.save_interval_seconds, args.use_predefined_upper_bound,
               args.use_incremental_solving, args.variable_for_incremental, args.use_symmetry_breaking,
-              args.use_heuristic)
+              args.use_heuristic, args.solver)
 
 
 if __name__ == "__main__":
