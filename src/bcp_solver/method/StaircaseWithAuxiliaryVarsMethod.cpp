@@ -13,65 +13,8 @@ void BCPSolver::StaircaseWithAuxiliaryVarsMethod::symmetry_breaking()
     }
 }
 
-// void BCPSolver::StaircaseWithAuxiliaryVarsMethod::first_constraint()
-// {
-//     for (int i = 0; i < graph->get_number_of_nodes(); i++)
-//     {
-//         if (graph->get_degree(i) == 0)
-//         {
-//             std::vector<int> vars;
-//             for (int c = 1; c < span + 1; c++)
-//             {
-//                 vars.push_back(x[{i, c}]);
-//             }
-//             sat_solver->encode_equals_k(vars, 1);
-//             continue;
-//         }
-//
-//         int max_weight_of_current_node = 0;
-//         for (const auto& neighbor : graph->get_neighbors(i))
-//         {
-//             if (const int weight = graph->get_weight(i, neighbor); weight > max_weight_of_current_node)
-//             {
-//                 max_weight_of_current_node = weight;
-//             }
-//         }
-//
-//         max_weight[i] = max_weight_of_current_node;
-//
-//         if (max_weight_of_current_node <= 1)
-//         {
-//             std::vector<int> vars;
-//             for (int c = 1; c < span + 1; c++)
-//             {
-//                 vars.push_back(x[{i, c}]);
-//             }
-//             sat_solver->encode_equals_k(vars, 1);
-//         }
-//         else
-//         {
-//             const auto groups = group_range(span, max_weight_of_current_node);
-//             encode_staircase_block(i, 1, span, max_weight_of_current_node);
-//             std::vector<int> aux_vars;
-//             for (const auto& [fst, snd] : groups)
-//             {
-//                 aux_vars.push_back(get_aux_var_for_staircase(i, fst, snd));
-//             }
-//             sat_solver->encode_equals_k(aux_vars, 1);
-//         }
-//     }
-// }
-
 void BCPSolver::StaircaseWithAuxiliaryVarsMethod::first_constraint()
 {
-    int max_weight_global = 0;
-    for (const auto& [u, v, weight] : graph->get_edges())
-    {
-        if (weight > max_weight_global)
-        {
-            max_weight_global = weight;
-        }
-    }
     for (int i = 0; i < graph->get_number_of_nodes(); i++)
     {
         if (graph->get_degree(i) == 0)
@@ -85,30 +28,27 @@ void BCPSolver::StaircaseWithAuxiliaryVarsMethod::first_constraint()
             continue;
         }
 
-        // int max_weight_of_current_node = 0;
-        int max_weight_of_current_node = max_weight_global;
-        // for (const auto& neighbor : graph->get_neighbors(i))
-        // {
-        //     if (const int weight = graph->get_weight(i, neighbor); weight > max_weight_of_current_node)
-        //     {
-        //         max_weight_of_current_node = weight;
-        //     }
-        // }
+        int max_weight_of_current_node = 0;
+        for (const auto& neighbor : graph->get_neighbors(i))
+        {
+            if (const int weight = graph->get_weight(i, neighbor); weight > max_weight_of_current_node)
+            {
+                max_weight_of_current_node = weight;
+            }
+        }
 
-        // max_weight[i] = max_weight_of_current_node;
+        max_weight[i] = max_weight_of_current_node;
 
-        max_weight[i] = max_weight_global;
-
-        // if (max_weight_of_current_node <= 1)
-        // {
-        //     std::vector<int> vars;
-        //     for (int c = 1; c < span + 1; c++)
-        //     {
-        //         vars.push_back(x[{i, c}]);
-        //     }
-        //     sat_solver.encode_equals_k(vars, 1);
-        // }
-        // else
+        if (max_weight_of_current_node <= 1)
+        {
+            std::vector<int> vars;
+            for (int c = 1; c < span + 1; c++)
+            {
+                vars.push_back(x[{i, c}]);
+            }
+            sat_solver->encode_equals_k(vars, 1);
+        }
+        else
         {
             const auto groups = group_range(span, max_weight_of_current_node);
             encode_staircase_block(i, 1, span, max_weight_of_current_node);
@@ -121,6 +61,66 @@ void BCPSolver::StaircaseWithAuxiliaryVarsMethod::first_constraint()
         }
     }
 }
+
+// void BCPSolver::StaircaseWithAuxiliaryVarsMethod::first_constraint()
+// {
+//     int max_weight_global = 0;
+//     for (const auto& [u, v, weight] : graph->get_edges())
+//     {
+//         if (weight > max_weight_global)
+//         {
+//             max_weight_global = weight;
+//         }
+//     }
+//     for (int i = 0; i < graph->get_number_of_nodes(); i++)
+//     {
+//         if (graph->get_degree(i) == 0)
+//         {
+//             std::vector<int> vars;
+//             for (int c = 1; c < span + 1; c++)
+//             {
+//                 vars.push_back(x[{i, c}]);
+//             }
+//             sat_solver->encode_equals_k(vars, 1);
+//             continue;
+//         }
+//
+//         // int max_weight_of_current_node = 0;
+//         int max_weight_of_current_node = max_weight_global;
+//         // for (const auto& neighbor : graph->get_neighbors(i))
+//         // {
+//         //     if (const int weight = graph->get_weight(i, neighbor); weight > max_weight_of_current_node)
+//         //     {
+//         //         max_weight_of_current_node = weight;
+//         //     }
+//         // }
+//
+//         // max_weight[i] = max_weight_of_current_node;
+//
+//         max_weight[i] = max_weight_global;
+//
+//         // if (max_weight_of_current_node <= 1)
+//         // {
+//         //     std::vector<int> vars;
+//         //     for (int c = 1; c < span + 1; c++)
+//         //     {
+//         //         vars.push_back(x[{i, c}]);
+//         //     }
+//         //     sat_solver.encode_equals_k(vars, 1);
+//         // }
+//         // else
+//         {
+//             const auto groups = group_range(span, max_weight_of_current_node);
+//             encode_staircase_block(i, 1, span, max_weight_of_current_node);
+//             std::vector<int> aux_vars;
+//             for (const auto& [fst, snd] : groups)
+//             {
+//                 aux_vars.push_back(get_aux_var_for_staircase(i, fst, snd));
+//             }
+//             sat_solver->encode_equals_k(aux_vars, 1);
+//         }
+//     }
+// }
 
 void BCPSolver::StaircaseWithAuxiliaryVarsMethod::second_constraint()
 {

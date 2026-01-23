@@ -322,18 +322,16 @@ int BCPSolver::BCPSolver::get_span() const
 
 std::unordered_map<std::string, double> BCPSolver::BCPSolver::get_statistics() const
 {
-    auto stats = std::unordered_map<std::string, double>();
-    auto sat_solver_stats = sat_solver->get_statistics();
+    auto stats = sat_solver->get_statistics();
+
     stats["V"] = graph->get_number_of_nodes();
     stats["E"] = graph->get_number_of_edges();
     stats["upper_bound"] = upper_bound;
-    stats["variables"] = sat_solver_stats["variables"];
-    stats["clauses"] = sat_solver_stats["clauses"];
     stats["status"] = status;
     stats["span"] = get_span();
     stats["encoding_time"] = encoding_time;
-    stats["total_solving_time"] = sat_solver_stats["total_solving_time"];
-    stats["time_used"] = encoding_time + sat_solver_stats["total_solving_time"];
+
+    stats["time_used"] = encoding_time + stats["total_solving_time"];
 
     return stats;
 }

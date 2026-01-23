@@ -32,6 +32,10 @@ namespace SATSolver
             }
         };
 
+        std::unordered_map<std::string, double> stats_accum;
+
+        void capture_and_accumulate_stats();
+
     public:
         Cadical() = default;
 
@@ -50,6 +54,8 @@ namespace SATSolver
         int solve(const std::vector<int>* assumptions, double time_limit) override;
 
         void reset() override;
+
+        std::unordered_map<std::string, double> get_statistics() const override;
     };
 } // SATSolver
 

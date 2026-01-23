@@ -5,6 +5,114 @@
 #include "Cadical.h"
 
 #include <condition_variable>
+#include <fstream>
+#include <iostream>
+
+#ifdef _WIN32
+#include <io.h>
+#define DUP _dup
+#define DUP2 _dup2
+#define FILENO _fileno
+#define UNLINK _unlink
+#else
+#include <unistd.h>
+#define DUP dup
+#define DUP2 dup2
+#define FILENO fileno
+#define UNLINK unlink
+#endif
+
+// Static mutex to protect stdout redirection (process-global resource)
+static std::mutex stdout_capture_mutex;
+
+void SATSolver::Cadical::capture_and_accumulate_stats()
+{
+    std::lock_guard<std::mutex> lock(stdout_capture_mutex);
+
+    const char* temp_filename = "cadical_stats_capture.tmp";
+
+    // 1. Flush current stdout to ensure clean state
+    fflush(stdout);
+
+    // 2. Save the current stdout file descriptor
+    int original_stdout_fd = DUP(FILENO(stdout));
+
+    // 3. Redirect stdout to our temp file
+    if (freopen(temp_filename, "w", stdout) == nullptr)
+    {
+        // Fallback: If redirection fails, restore and exit
+        // (Original fd is still open, just close duplicate)
+#ifdef _WIN32
+        _close(original_stdout_fd);
+#else
+        close(original_stdout_fd);
+#endif
+        return;
+    }
+
+    // 4. Call CaDiCaL statistics (writes to the temp file now)
+    solver->statistics();
+
+    // 5. Flush and Restore stdout
+    fflush(stdout);
+    DUP2(original_stdout_fd, FILENO(stdout)); // Replace stdout with original
+
+    // Close the backup fd
+#ifdef _WIN32
+    _close(original_stdout_fd);
+#else
+    close(original_stdout_fd);
+#endif
+
+    // 6. Read the temp file and parse
+    std::ifstream infile(temp_filename);
+    std::string line;
+    while (std::getline(infile, line))
+    {
+        // Skip lines that don't look like stats
+        if (line.empty() || line[0] != 'c') continue;
+
+        std::stringstream ss(line);
+        std::string token;
+        std::vector<std::string> tokens;
+        while (ss >> token)
+        {
+            tokens.push_back(token);
+        }
+
+        // Check format: "c [key]: [value] ..."
+        // Need at least "c", "key:", "value"
+        if (tokens.size() < 3) continue;
+
+        // Iterate to find the key ending in ':'
+        for (size_t i = 1; i < tokens.size() - 1; ++i)
+        {
+            if (tokens[i].back() == ':')
+            {
+                std::string key = tokens[i];
+                key.pop_back(); // Remove ':'
+
+                try
+                {
+                    // The next token is the value
+                    double value = std::stod(tokens[i + 1]);
+
+                    // Sum the value into our map
+                    stats_accum[key] += value;
+                }
+                catch (...)
+                {
+                    // Ignore non-numeric values
+                }
+                break; // Found the stat for this line, move to next line
+            }
+        }
+    }
+    infile.close();
+
+    // 7. Delete the temp file
+    UNLINK(temp_filename);
+}
 
 void SATSolver::Cadical::add_clause(const std::vector<int>& clause)
 {
@@ -55,7 +163,6 @@ int SATSolver::Cadical::solve(const std::vector<int>* assumptions, const double 
 {
     if (time_limit != NO_TIME_LIMIT && time_limit < 0.0)
     {
-        // Time limit already exceeded before we started
         status = CaDiCaL::Status::UNKNOWN;
         return status;
     }
@@ -73,44 +180,38 @@ int SATSolver::Cadical::solve(const std::vector<int>* assumptions, const double 
     if (time_limit == NO_TIME_LIMIT)
     {
         status = solver->solve();
+        // Capture immediately after solving
+        capture_and_accumulate_stats();
     }
     else
     {
-        // 1. Create the terminator on the stack (it must outlive the thread usage)
         AtomicTerminator terminator;
         solver->connect_terminator(&terminator);
 
-        // 2. Synchronization primitives
         std::mutex mtx;
         std::condition_variable cv;
-        bool finished = false; // Flag to tell timer thread we are done
+        bool finished = false;
 
-        // 3. Start the timer thread
         std::thread timer_thread([&]()
         {
             std::unique_lock<std::mutex> lk(mtx);
-            // Wait for 'time_limit' OR until 'finished' becomes true.
-            // wait_for returns false if it timed out.
             if (!cv.wait_for(lk, std::chrono::duration<double>(time_limit), [&] { return finished; }))
             {
-                // If we are here, it means we timed out. Signal termination.
                 terminator.force_terminate.store(true, std::memory_order_relaxed);
             }
         });
 
-        // 4. Run the solver (Main Thread)
         status = solver->solve();
 
-        // 5. Signal the timer thread that we finished
+        // Capture immediately after solving
+        capture_and_accumulate_stats();
+
         {
-            std::lock_guard lk(mtx);
+            std::lock_guard<std::mutex> lk(mtx);
             finished = true;
         }
-        cv.notify_one(); // Wake up the timer thread if it's sleeping
+        cv.notify_one();
 
-        // 6. Safely join the thread.
-        // Because of the notification, the thread will wake up and exit immediately
-        // if the solver finished early.
         if (timer_thread.joinable())
         {
             timer_thread.join();
@@ -129,4 +230,16 @@ void SATSolver::Cadical::reset()
     number_of_clauses = 0;
     number_of_variables = 0;
     solver = std::make_unique<CaDiCaL::Solver>();
+}
+
+std::unordered_map<std::string, double> SATSolver::Cadical::get_statistics() const
+{
+    auto final_stats = stats_accum;
+
+    // Add/Overwrite with manual SATSolver base metrics
+    final_stats["total_solving_time"] = time_accum;
+    final_stats["clauses"] = number_of_clauses;
+    final_stats["variables"] = number_of_variables;
+
+    return final_stats;
 }
