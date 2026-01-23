@@ -10,9 +10,6 @@
 #include <map>
 #include <utility>
 
-#include "sat_solver/Cadical.h"
-#include "sat_solver/Kissat.h"
-
 namespace BCPSolver
 {
     class BCPSolver
@@ -22,7 +19,6 @@ namespace BCPSolver
         int upper_bound{};
         int lower_bound{};
 
-        // std::unique_ptr<SATSolver::SatSolver> sat_solver{std::make_unique<SATSolver::Cadical>()};
         std::unique_ptr<SATSolver::SatSolver> sat_solver;
 
         SolverStatus status{UNKNOWN};
@@ -60,7 +56,7 @@ namespace BCPSolver
                                         SATSolver::SOLVER solver = SATSolver::CADICAL,
                                         int upper_bound = -1,
                                         bool use_symmetry_breaking = true,
-                                        bool use_heuristic = false);
+                                        bool use_heuristic = false, const std::string& width = "");
 
         SolverStatus non_optimal_solving(double time_limit);
 

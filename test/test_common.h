@@ -26,10 +26,11 @@ namespace BCPSolver::test
                                                   const SATSolver::SOLVER solver,
                                                   const int upper_bound,
                                                   const bool use_symmetry_breaking,
-                                                  const bool use_heuristic)
+                                                  const bool use_heuristic,
+                                                  const std::string& width)
     {
         return std::unique_ptr<BCPSolver>(
-            BCPSolver::create_solver(method, g, solver, upper_bound, use_symmetry_breaking, use_heuristic));
+            BCPSolver::create_solver(method, g, solver, upper_bound, use_symmetry_breaking, use_heuristic, width));
     }
 
     inline void solve_expect(const SolvingMethod method,
@@ -38,6 +39,7 @@ namespace BCPSolver::test
                              const int upper_bound,
                              const bool use_symmetry_breaking,
                              const bool use_heuristic,
+                             const std::string& width,
                              const bool find_optimal,
                              const bool incremental,
                              const std::string& variable_for_incremental,
@@ -47,7 +49,7 @@ namespace BCPSolver::test
         const auto g = load_graph(rel_graph_path);
         if (!g) return;
 
-        const auto s = make_solver(method, g.get(), solver, upper_bound, use_symmetry_breaking, use_heuristic);
+        const auto s = make_solver(method, g.get(), solver, upper_bound, use_symmetry_breaking, use_heuristic, width);
         ASSERT_NE(s, nullptr);
 
         const auto status = s->solve(NO_TIME_LIMIT, find_optimal, incremental, variable_for_incremental);

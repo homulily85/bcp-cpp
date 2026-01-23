@@ -140,14 +140,16 @@ void BCPSolver::ArgParser::printUsage(const char* programName)
         << "  <method>                        Method for solving: '1G', '1L','2G', '2L', 'Xa(no-cache)', "
         "'Xa(cache)', 'X'\n\n"
         << "Options:\n"
-        << "  --solver <SATSolver>            SAT solver to use: 'kissat' (default), 'cadical'\n"
+        << "  --solver <SATSolver>            SAT solver to use: 'cadical' (default), 'kissat'\n"
         << "  -t, --time_limit <int>          Set time limit\n"
         << "  -ub, --upper_bound <int>        Set preferred upper bound\n"
         << "  --no-optimal                    Disable finding optimal value\n"
         << "  --use-symmetry-breaking         Enable symmetry breaking\n"
-        << "  --use-heuristics                Enable heuristics while encoding\n"
+        << "  --use-pairwise                  Enable pairwise encoding for all edges with d=1 while encoding\n"
+        << "  -w , --width <vary|fixed>       Set width for encoding."
+        "Note: This flag must be set for 'X', 'Xa' method but can be set for others. \n"
         << "  -i, --incremental               Enable incremental mode. "
-           "Note: This flag requires '-v' to be set as well and does not support kissat.\n"
+        "Note: This flag requires '-v' to be set as well and does not support Kissat.\n"
         << "  -v  --variable-for-incremental  Variables used in incremental: 'x, 'y', 'both'. You must specify this when"
         " using incremental mode, but it will be ignored otherwise.\n"
         << "  -h, --help                      Show this help message\n";
@@ -170,17 +172,17 @@ BCPSolver::ProgramConfig BCPSolver::ArgParser::parse(int argc, char* argv[])
         {
             if (i + 1 < argc)
             {
-                if (std::string solver = argv[++i]; solver == "kissat")
+                if (std::string solver = argv[++i]; solver == "kissat" || solver == "KISSAT" || solver == "Kissat")
                 {
                     config.solver = SATSolver::KISSAT;
                 }
-                else if (solver == "cadical")
+                else if (solver == "cadical" || solver == "CADICAL" || solver == "Cadical")
                 {
                     config.solver = SATSolver::CADICAL;
                 }
                 else
                 {
-                    throw std::invalid_argument("Invalid solver: " + solver + ". Expected 'kissat' or 'cadical'.");
+                    throw std::invalid_argument("Invalid solver: " + solver + ". Expected 'Kissat' or 'Cadical'.");
                 }
             }
             else
@@ -226,9 +228,26 @@ BCPSolver::ProgramConfig BCPSolver::ArgParser::parse(int argc, char* argv[])
         {
             config.use_symmetry_breaking = true;
         }
-        else if (arg == "--use-heuristics")
+        else if (arg == "--use-pairwise")
         {
-            config.use_heuristics = true;
+            config.use_pairwise = true;
+        }
+        else if (arg == "-w" || arg == "--width")
+        {
+            if (i + 1 < argc)
+            {
+                if (std::string width = argv[++i]; width == "vary" || width == "fixed")
+                {
+                    config.width = width;
+                }
+                else
+                {
+                    throw std::invalid_argument(
+                        "Invalid width: " + width + ". Expected 'vary' or 'fixed'.");
+                }
+            }
+            else
+                throw std::invalid_argument("Missing value for width");
         }
         else if (arg == "--no-optimal")
         {

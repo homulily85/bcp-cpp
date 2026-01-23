@@ -29,7 +29,7 @@ def parse_solver_output(output_text):
 def process_instance(solving_method: str, file_path: str, upper_bound=None, time_limit: int = None,
                      queue: multiprocessing.Queue = None, use_incremental_solving: bool = False,
                      variable_for_incremental='x', use_symmetry_breaking: bool = False, use_heuristic: bool = False,
-                     solver: str = 'kissat'):
+                     width: str = '', solver: str = 'kissat'):
     """
     Process a single instance of the given path.
     """
@@ -56,6 +56,10 @@ def process_instance(solving_method: str, file_path: str, upper_bound=None, time
 
         if use_heuristic:
             command.append("--use-heuristics")
+
+        if width:
+            command.append("--width")
+            command.append(width)
 
         command.append("--solver")
         command.append(solver)
@@ -87,11 +91,11 @@ def process_instance(solving_method: str, file_path: str, upper_bound=None, time
 
 
 def worker(args):
-    if len(args) == 8:
-        solving_method, file_path, time_limit, use_incremental_solving, variable_for_incremental, use_symmetry_breaking, use_heuristic, solver = args
+    if len(args) == 9:
+        solving_method, file_path, time_limit, use_incremental_solving, variable_for_incremental, use_symmetry_breaking, use_heuristic, width, solver = args
         upper_bound = None
     else:
-        solving_method, file_path, upper_bound, time_limit, use_incremental_solving, variable_for_incremental, use_symmetry_breaking, use_heuristic, solver = args
+        solving_method, file_path, upper_bound, time_limit, use_incremental_solving, variable_for_incremental, use_symmetry_breaking, use_heuristic, width, solver = args
 
     queue = multiprocessing.Queue()
     p = multiprocessing.Process(target=process_instance, kwargs={'solving_method': solving_method,
@@ -103,6 +107,7 @@ def worker(args):
                                                                  'variable_for_incremental': variable_for_incremental,
                                                                  'use_symmetry_breaking': use_symmetry_breaking,
                                                                  'use_heuristic': use_heuristic,
+                                                                 'width': width,
                                                                  'solver': solver})
     p.start()
 
@@ -137,7 +142,7 @@ def benchmark(solving_method: str, time_limit: int = None, continue_from: str = 
               num_concurrent_processes: int = 1, save_interval_seconds: int = 60,
               use_predefine_upper_bound: bool = False, use_incremental_solving: bool = False,
               variable_for_incremental: str = 'x', use_symmetry_breaking: bool = False, use_heuristic: bool = False,
-              solver: str = 'kissat'):
+              width: str = '', solver: str = 'kissat'):
     """
     Benchmark a dataset using concurrent.futures.ProcessPoolExecutor.
     Periodically exports partial results to avoid data loss from unexpected interruptions.
@@ -168,6 +173,7 @@ def benchmark(solving_method: str, time_limit: int = None, continue_from: str = 
                 variable_for_incremental,
                 use_symmetry_breaking,
                 use_heuristic,
+                width,
                 solver
             ))
     else:
@@ -179,7 +185,7 @@ def benchmark(solving_method: str, time_limit: int = None, continue_from: str = 
                 continue
             tasks.append(
                 (solving_method, f'{folder_path}/{file}', time_limit, use_incremental_solving, variable_for_incremental,
-                 use_symmetry_breaking, use_heuristic, solver))
+                 use_symmetry_breaking, use_heuristic, width, solver))
 
     executor = concurrent.futures.ProcessPoolExecutor(max_workers=num_concurrent_processes)
     futures = []
@@ -201,7 +207,7 @@ def benchmark(solving_method: str, time_limit: int = None, continue_from: str = 
                 current_time = time.time()
                 if current_time - last_save_time >= save_interval_seconds:
                     export_result(solving_method, dataset_stats, use_incremental_solving, variable_for_incremental,
-                                  use_symmetry_breaking, use_heuristic, solver, suffix="partial")
+                                  use_symmetry_breaking, use_heuristic, width, solver, suffix="partial")
                     last_save_time = current_time
 
             except Exception:
@@ -210,7 +216,7 @@ def benchmark(solving_method: str, time_limit: int = None, continue_from: str = 
                     f.cancel()
                 executor.shutdown(wait=False, cancel_futures=True)
                 export_result(solving_method, dataset_stats, use_incremental_solving, variable_for_incremental,
-                              use_symmetry_breaking, use_heuristic, solver, suffix="crash")
+                              use_symmetry_breaking, use_heuristic, width, solver, suffix="crash")
                 sys.exit(1)
 
     except KeyboardInterrupt:
@@ -218,16 +224,16 @@ def benchmark(solving_method: str, time_limit: int = None, continue_from: str = 
             f.cancel()
         executor.shutdown(wait=False, cancel_futures=True)
         export_result(solving_method, dataset_stats, use_incremental_solving, variable_for_incremental,
-                      use_symmetry_breaking, use_heuristic, solver, suffix="interrupted")
+                      use_symmetry_breaking, use_heuristic, width, solver, suffix="interrupted")
         sys.exit(1)
 
     # Final export at the end
     export_result(solving_method, dataset_stats, use_incremental_solving, variable_for_incremental,
-                  use_symmetry_breaking, use_heuristic, solver)
+                  use_symmetry_breaking, use_heuristic, width, solver)
 
 
 def export_result(solving_method: str, stat, use_incremental_solving, variable_for_incremental, use_symmetry_breaking,
-                  use_heuristic, solver, suffix=None):
+                  use_heuristic, width, solver, suffix=None):
     """
     Export both detailed results and summary reports.
     `suffix` is appended to the filename to indicate partial or crash saves.
@@ -237,6 +243,9 @@ def export_result(solving_method: str, stat, use_incremental_solving, variable_f
     suffix = f"_{suffix}" if suffix else ""
 
     file_name = f'{solving_method}'
+
+    if width:
+        file_name += f'-{width}-width'
 
     if use_incremental_solving:
         file_name += f'-I-{variable_for_incremental}'
@@ -282,9 +291,11 @@ def main():
                         help='Variable to use for incremental solving (if applicable).')
     parser.add_argument('--use_symmetry_breaking', action='store_true', default=False,
                         help='Use symmetry breaking in the solving process')
-    parser.add_argument('--use_heuristic', action='store_true', default=False,
-                        help='Enable heuristics while encoding, if applicable')
-    parser.add_argument('--solver', type=str, choices=['kissat', 'cadical'], default='kissat',
+    parser.add_argument('--use_pairwise', action='store_true', default=False,
+                        help='Enable pairwise while encoding, if applicable')
+    parser.add_argument('--width', type=str, default="", choices=['fixed', '', 'vary'],
+                        help='Width parameter (if applicable).')
+    parser.add_argument('--solver', type=str, choices=['Kissat', 'Cadical'], default='Cadical',
                         help='The underlying SAT solver to use.')
 
     args = parser.parse_args()
@@ -292,7 +303,7 @@ def main():
     benchmark(args.solving_method, args.time_limit, args.continue_from,
               args.num_concurrent_processes, args.save_interval_seconds, args.use_predefined_upper_bound,
               args.use_incremental_solving, args.variable_for_incremental, args.use_symmetry_breaking,
-              args.use_heuristic, args.solver)
+              args.use_pairwise, args.width, args.solver)
 
 
 if __name__ == "__main__":

@@ -16,6 +16,8 @@
 #include "method/StaircaseWithoutAuxiliaryVarsMethod.h"
 #include "method/TwoVarsGreaterMethod.h"
 #include "method/TwoVarsLessMethod.h"
+#include "sat_solver/Cadical.h"
+#include "sat_solver/Kissat.h"
 
 void BCPSolver::BCPSolver::calculate_upper_bound()
 {
@@ -154,27 +156,56 @@ BCPSolver::BCPSolver* BCPSolver::BCPSolver::create_solver(const SolvingMethod me
                                                           const SATSolver::SOLVER solver,
                                                           const int upper_bound,
                                                           const bool use_symmetry_breaking,
-                                                          const bool use_heuristic)
+                                                          const bool use_heuristic,
+                                                          const std::string& width)
 {
     switch (method)
     {
     case TwoVariablesGreater:
+        if (!width.empty())
+        {
+            throw std::invalid_argument("TwoVariablesGreater method does not support width parameter");
+        }
         return new TwoVarsGreaterMethod(graph, solver, upper_bound, use_symmetry_breaking, use_heuristic);
     case TwoVariablesLess:
+        if (!width.empty())
+        {
+            throw std::invalid_argument("TwoVariablesLess method does not support width parameter");
+        }
         return new TwoVarsLessMethod(graph, solver, upper_bound, use_symmetry_breaking, use_heuristic);
     case OneVariableGreater:
+        if (!width.empty())
+        {
+            throw std::invalid_argument("OneVariableGreater method does not support width parameter");
+        }
         return new OneVarGreaterMethod(graph, solver, upper_bound, use_symmetry_breaking, use_heuristic);
     case OneVariableLess:
+        if (!width.empty())
+        {
+            throw std::invalid_argument("OneVariableLess method does not support width parameter");
+        }
         return new OneVarLessMethod(graph, solver, upper_bound, use_symmetry_breaking, use_heuristic);
     case StaircaseWithAuxiliaryVarsNoCache:
+        if (width.empty())
+        {
+            throw std::invalid_argument("StaircaseWithAuxiliaryVarsNoCache method requires width parameter");
+        }
         return new StaircaseWithAuxiliaryVarsMethod(graph, solver, upper_bound, use_symmetry_breaking, use_heuristic,
-                                                    false);
+                                                    false, width);
     case StaircaseWithAuxiliaryVarsWithCache:
+        if (width.empty())
+        {
+            throw std::invalid_argument("StaircaseWithAuxiliaryVarsWithCache method requires width parameter");
+        }
         return new StaircaseWithAuxiliaryVarsMethod(graph, solver, upper_bound, use_symmetry_breaking, use_heuristic,
-                                                    true);
+                                                    true, width);
     case StaircaseWithoutAuxiliaryVars:
+        if (width.empty())
+        {
+            throw std::invalid_argument("StaircaseWithoutAuxiliaryVars method requires width parameter");
+        }
         return new StaircaseWithoutAuxiliaryVarsMethod(graph, solver, upper_bound, use_symmetry_breaking,
-                                                       use_heuristic);
+                                                       use_heuristic, width);
     default:
         throw std::invalid_argument("Invalid solving method");
     }

@@ -15,41 +15,81 @@ void BCPSolver::StaircaseWithAuxiliaryVarsMethod::symmetry_breaking()
 
 void BCPSolver::StaircaseWithAuxiliaryVarsMethod::first_constraint()
 {
-    for (int i = 0; i < graph->get_number_of_nodes(); i++)
+    if (width == "vary")
     {
-        if (graph->get_degree(i) == 0)
+        for (int i = 0; i < graph->get_number_of_nodes(); i++)
         {
-            std::vector<int> vars;
-            for (int c = 1; c < span + 1; c++)
+            if (graph->get_degree(i) == 0)
             {
-                vars.push_back(x[{i, c}]);
+                std::vector<int> vars;
+                for (int c = 1; c < span + 1; c++)
+                {
+                    vars.push_back(x[{i, c}]);
+                }
+                sat_solver->encode_equals_k(vars, 1);
+                continue;
             }
-            sat_solver->encode_equals_k(vars, 1);
-            continue;
-        }
 
-        int max_weight_of_current_node = 0;
-        for (const auto& neighbor : graph->get_neighbors(i))
-        {
-            if (const int weight = graph->get_weight(i, neighbor); weight > max_weight_of_current_node)
+            int max_weight_of_current_node = 0;
+            for (const auto& neighbor : graph->get_neighbors(i))
             {
-                max_weight_of_current_node = weight;
+                if (const int weight = graph->get_weight(i, neighbor); weight > max_weight_of_current_node)
+                {
+                    max_weight_of_current_node = weight;
+                }
             }
-        }
 
-        max_weight[i] = max_weight_of_current_node;
+            max_weight[i] = max_weight_of_current_node;
 
-        if (max_weight_of_current_node <= 1)
-        {
-            std::vector<int> vars;
-            for (int c = 1; c < span + 1; c++)
+            if (max_weight_of_current_node <= 1)
             {
-                vars.push_back(x[{i, c}]);
+                std::vector<int> vars;
+                for (int c = 1; c < span + 1; c++)
+                {
+                    vars.push_back(x[{i, c}]);
+                }
+                sat_solver->encode_equals_k(vars, 1);
             }
-            sat_solver->encode_equals_k(vars, 1);
+            else
+            {
+                const auto groups = group_range(span, max_weight_of_current_node);
+                encode_staircase_block(i, 1, span, max_weight_of_current_node);
+                std::vector<int> aux_vars;
+                for (const auto& [fst, snd] : groups)
+                {
+                    aux_vars.push_back(get_aux_var_for_staircase(i, fst, snd));
+                }
+                sat_solver->encode_equals_k(aux_vars, 1);
+            }
         }
-        else
+    }
+    else if (width == "fixed")
+    {
+        int max_weight_global = 0;
+        for (const auto& [u, v, weight] : graph->get_edges())
         {
+            if (weight > max_weight_global)
+            {
+                max_weight_global = weight;
+            }
+        }
+        for (int i = 0; i < graph->get_number_of_nodes(); i++)
+        {
+            if (graph->get_degree(i) == 0)
+            {
+                std::vector<int> vars;
+                for (int c = 1; c < span + 1; c++)
+                {
+                    vars.push_back(x[{i, c}]);
+                }
+                sat_solver->encode_equals_k(vars, 1);
+                continue;
+            }
+
+            const int max_weight_of_current_node = max_weight_global;
+
+            max_weight[i] = max_weight_global;
+
             const auto groups = group_range(span, max_weight_of_current_node);
             encode_staircase_block(i, 1, span, max_weight_of_current_node);
             std::vector<int> aux_vars;
@@ -196,9 +236,10 @@ void BCPSolver::StaircaseWithAuxiliaryVarsMethod::create_variable()
     }
 }
 
-std::vector<int>* BCPSolver::StaircaseWithAuxiliaryVarsMethod::create_assumptions(const std::string& variable_for_incremental)
+std::vector<int>* BCPSolver::StaircaseWithAuxiliaryVarsMethod::create_assumptions(
+    const std::string& variable_for_incremental)
 {
-    if (variable_for_incremental =="x")
+    if (variable_for_incremental == "x")
     {
         auto* assumptions = new std::vector<int>(graph->get_number_of_nodes());
 
@@ -207,7 +248,8 @@ std::vector<int>* BCPSolver::StaircaseWithAuxiliaryVarsMethod::create_assumption
             (*assumptions)[i] = -x[{i, span}];
         }
         return assumptions;
-    } else
+    }
+    else
     {
         throw std::runtime_error("Invalid variable for incremental in StaircaseMethod.");
     }
@@ -240,39 +282,39 @@ int BCPSolver::StaircaseWithAuxiliaryVarsMethod::get_aux_var_for_staircase(
 }
 
 void BCPSolver::StaircaseWithAuxiliaryVarsMethod::encode_staircase_block(
-    const int node, const int block_start, const int block_end, int width)
+    const int node, const int block_start, const int block_end, int block_width)
 {
     const int n = block_end - block_start + 1;
-    if (n < width)
+    if (n < block_width)
     {
-        width = n;
+        block_width = n;
     }
     if (n == 1)
     {
         return;
     }
 
-    for (int i = 0; i < static_cast<int>(ceil(n / static_cast<double>(width))); i++)
+    for (int i = 0; i < static_cast<int>(ceil(n / static_cast<double>(block_width))); i++)
     {
-        encode_window(node, i, n, width);
+        encode_window(node, i, n, block_width);
     }
 
-    for (int i = 0; i < static_cast<int>(ceil(n / static_cast<double>(width))) - 1; i++)
+    for (int i = 0; i < static_cast<int>(ceil(n / static_cast<double>(block_width))) - 1; i++)
     {
-        glue_window(node, i, n, width);
+        glue_window(node, i, n, block_width);
     }
 }
 
 void BCPSolver::StaircaseWithAuxiliaryVarsMethod::encode_window(const int node, const int window_index, const int n,
-                                                                const int width)
+                                                                const int block_width)
 {
     if (window_index == 0)
     {
-        const int last_color = (window_index + 1) * width;
+        const int last_color = (window_index + 1) * block_width;
 
-        for (int i = 2; i < width + 1; i++)
+        for (int i = 2; i < block_width + 1; i++)
         {
-            int current_color = (window_index + 1) * width + 1 - i;
+            int current_color = (window_index + 1) * block_width + 1 - i;
             sat_solver->add_clause(
                 -x[{node, current_color}],
                 get_aux_var_for_staircase(node, current_color, last_color));
@@ -287,23 +329,23 @@ void BCPSolver::StaircaseWithAuxiliaryVarsMethod::encode_window(const int node, 
                 -get_aux_var_for_staircase(node, current_color, last_color));
         }
 
-        for (int i = 2; i < width + 1; i++)
+        for (int i = 2; i < block_width + 1; i++)
         {
-            int current_color = (window_index + 1) * width + 1 - i;
+            int current_color = (window_index + 1) * block_width + 1 - i;
             sat_solver->add_clause(-x[{node, current_color}],
-                                  -get_aux_var_for_staircase(node, current_color + 1, last_color));
+                                   -get_aux_var_for_staircase(node, current_color + 1, last_color));
         }
     }
-    else if (window_index == static_cast<int>(ceil(n / static_cast<double>(width)) - 1))
+    else if (window_index == static_cast<int>(ceil(n / static_cast<double>(block_width)) - 1))
     {
-        const int first_color = window_index * width + 1;
-        if ((window_index + 1) * width > n)
+        const int first_color = window_index * block_width + 1;
+        if ((window_index + 1) * block_width > n)
         {
-            const int real_width = n % width;
+            const int real_width = n % block_width;
 
             for (int i = 2; i < real_width + 1; i++)
             {
-                const int current_color = window_index * width + i;
+                const int current_color = window_index * block_width + i;
 
                 sat_solver->add_clause(
                     -x[{node, current_color}],
@@ -325,9 +367,9 @@ void BCPSolver::StaircaseWithAuxiliaryVarsMethod::encode_window(const int node, 
         }
         else
         {
-            for (int i = 2; i < width + 1; i++)
+            for (int i = 2; i < block_width + 1; i++)
             {
-                const int current_color = window_index * width + i;
+                const int current_color = window_index * block_width + i;
 
                 sat_solver->add_clause(
                     -x[{node, current_color}],
@@ -343,9 +385,9 @@ void BCPSolver::StaircaseWithAuxiliaryVarsMethod::encode_window(const int node, 
                     -get_aux_var_for_staircase(node, first_color, current_color));
             }
 
-            for (int i = 2; i < width + 1; i++)
+            for (int i = 2; i < block_width + 1; i++)
             {
-                const int current_color = window_index * width + i;
+                const int current_color = window_index * block_width + i;
                 sat_solver->add_clause(
                     -x[{node, current_color}],
                     -get_aux_var_for_staircase(node, first_color, current_color - 1));
@@ -355,11 +397,11 @@ void BCPSolver::StaircaseWithAuxiliaryVarsMethod::encode_window(const int node, 
 
     else
     {
-        const int first_color = window_index * width + 1;
+        const int first_color = window_index * block_width + 1;
 
-        for (int i = 2; i < width + 1; i++)
+        for (int i = 2; i < block_width + 1; i++)
         {
-            const int current_color = window_index * width + i;
+            const int current_color = window_index * block_width + i;
 
             sat_solver->add_clause(
                 -x[{node, current_color}],
@@ -375,19 +417,19 @@ void BCPSolver::StaircaseWithAuxiliaryVarsMethod::encode_window(const int node, 
                 -get_aux_var_for_staircase(node, first_color, current_color));
         }
 
-        for (int i = 2; i < width + 1; i++)
+        for (int i = 2; i < block_width + 1; i++)
         {
-            const int current_color = window_index * width + i;
+            const int current_color = window_index * block_width + i;
             sat_solver->add_clause(
                 -x[{node, current_color}],
                 -get_aux_var_for_staircase(node, first_color, current_color - 1));
         }
 
-        const int last_color = (window_index + 1) * width;
+        const int last_color = (window_index + 1) * block_width;
 
-        for (int i = 2; i < width + 1; i++)
+        for (int i = 2; i < block_width + 1; i++)
         {
-            int current_color = (window_index + 1) * width + 1 - i;
+            int current_color = (window_index + 1) * block_width + 1 - i;
 
             sat_solver->add_clause(
                 -x[{node, current_color}],
@@ -405,18 +447,19 @@ void BCPSolver::StaircaseWithAuxiliaryVarsMethod::encode_window(const int node, 
     }
 }
 
-void BCPSolver::StaircaseWithAuxiliaryVarsMethod::glue_window(int node, int window_index, int n, int width)
+void BCPSolver::StaircaseWithAuxiliaryVarsMethod::glue_window(const int node, const int window_index, const int n,
+                                                              const int block_width)
 {
-    const int last_color = (window_index + 1) * width;
-    const int first_color_reverse = (window_index + 1) * width + 1;
+    const int last_color = (window_index + 1) * block_width;
+    const int first_color_reverse = (window_index + 1) * block_width + 1;
 
-    if ((window_index + 2) * width > n)
+    if ((window_index + 2) * block_width > n)
     {
-        const int real_width = n % width;
+        const int real_width = n % block_width;
         for (int i = 1; i < real_width + 1; i++)
         {
-            const int current_color = window_index * width + i + 1;
-            const int current_reverse_color = (window_index + 1) * width + i;
+            const int current_color = window_index * block_width + i + 1;
+            const int current_reverse_color = (window_index + 1) * block_width + i;
 
             sat_solver->add_clause(
                 -get_aux_var_for_staircase(node, current_color, last_color),
@@ -425,10 +468,10 @@ void BCPSolver::StaircaseWithAuxiliaryVarsMethod::glue_window(int node, int wind
     }
     else
     {
-        for (int i = 1; i < width; i++)
+        for (int i = 1; i < block_width; i++)
         {
-            const int current_color = window_index * width + i + 1;
-            const int current_reverse_color = (window_index + 1) * width + i;
+            const int current_color = window_index * block_width + i + 1;
+            const int current_reverse_color = (window_index + 1) * block_width + i;
 
             sat_solver->add_clause(
                 -get_aux_var_for_staircase(node, current_color, last_color),

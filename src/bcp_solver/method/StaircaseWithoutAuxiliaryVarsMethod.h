@@ -18,8 +18,9 @@ namespace BCPSolver
         explicit StaircaseWithoutAuxiliaryVarsMethod(const Graph* graph, const SATSolver::SOLVER solver,
                                                      const int upper_bound,
                                                      const bool use_symmetry_breaking,
-                                                     const bool use_heuristic) :
-            StaircaseWithAuxiliaryVarsMethod(graph, solver, upper_bound, use_symmetry_breaking, use_heuristic, false)
+                                                     const bool use_heuristic, const std::string& width) :
+            StaircaseWithAuxiliaryVarsMethod(graph, solver, upper_bound, use_symmetry_breaking, use_heuristic, false,
+                                             width)
         {
         }
 

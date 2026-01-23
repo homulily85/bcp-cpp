@@ -22,7 +22,6 @@ set(CORE_SOURCES
         src/sat_solver/SatSolver.cpp
         src/bcp_solver/utility.cpp
         src/bcp_solver/bcp_solver.cpp
-        src/max_sat_solver/MaxSatSolver.cpp
         src/sat_solver/Cadical.cpp
         src/sat_solver/Cadical.h
         src/sat_solver/Kissat.cpp

@@ -11,11 +11,14 @@ TEST(StaircaseWithAuxiliaryVarsWithCacheEncodingTest, GEOM20_NonOptimal_DummyUpp
         {
             for (const bool heur : {false, true})
             {
-                constexpr int ub = 100;
-                SCOPED_TRACE(std::string(symm ? "symmetry=on" : "symmetry=off") + " / " +
-                    (heur ? "heuristic=on" : "heuristic=off"));
-                solve_expect(BCPSolver::StaircaseWithAuxiliaryVarsWithCache, "../dataset/GEOM20.col", solver, ub, symm,
-                             heur, false, false, "", SolverStatus::SATISFIABLE, ub);
+                for (const auto width : {"vary", "fixed"})
+                {
+                    constexpr int ub = 100;
+                    SCOPED_TRACE(std::string(symm ? "symmetry=on" : "symmetry=off") + " / " +
+                        (heur ? "heuristic=on" : "heuristic=off") + " / width=" + width);
+                    solve_expect(BCPSolver::StaircaseWithAuxiliaryVarsWithCache, "../dataset/GEOM20.col", solver,
+                                 ub, symm, heur, width, false, false, "", SolverStatus::SATISFIABLE, ub);
+                }
             }
         }
     }
@@ -41,10 +44,13 @@ TEST(StaircaseWithAuxiliaryVarsWithCacheEncodingTest, Optimal_NonIncremental_GEO
             {
                 for (const bool heur : {false, true})
                 {
-                    SCOPED_TRACE(std::string(path) + " / symmetry=" + (symm ? "on" : "off") + " / heuristic=" +
-                        (heur ? "on" : "off"));
-                    solve_expect(BCPSolver::StaircaseWithAuxiliaryVarsWithCache, path, solver, -1, symm, heur, true,
-                                 false, "", SolverStatus::OPTIMAL, expected_span);
+                    for (const auto width : {"vary", "fixed"})
+                    {
+                        SCOPED_TRACE(std::string(path) + " / symmetry=" + (symm ? "on" : "off") + " / heuristic=" +
+                            (heur ? "on" : "off") + " / width=" + width);
+                        solve_expect(BCPSolver::StaircaseWithAuxiliaryVarsWithCache, path, solver, -1, symm, heur,
+                                     width, true, false, "", SolverStatus::OPTIMAL, expected_span);
+                    }
                 }
             }
         }
@@ -72,10 +78,15 @@ TEST(StaircaseWithAuxiliaryVarsWithCacheEncodingTest, Optimal_Incremental_GEOM20
             {
                 for (const bool heur : {false, true})
                 {
-                    SCOPED_TRACE(std::string(path) + " / symmetry=" + (symm ? "on" : "off") + " / heuristic=" +
-                        (heur ? "on" : "off"));
-                    solve_expect(BCPSolver::StaircaseWithAuxiliaryVarsWithCache, path, solver, -1, symm, heur, true,
-                                 true, "x", SolverStatus::OPTIMAL, expected_span);
+                    for (const auto width : {"vary", "fixed"})
+                    {
+                        {
+                            SCOPED_TRACE(std::string(path) + " / symmetry=" + (symm ? "on" : "off") + " / heuristic=" +
+                                (heur ? "on" : "off") + " / width=" + width);
+                            solve_expect(BCPSolver::StaircaseWithAuxiliaryVarsWithCache, path, solver, -1, symm, heur,
+                                         width, true, true, "x", SolverStatus::OPTIMAL, expected_span);
+                        }
+                    }
                 }
             }
         }
