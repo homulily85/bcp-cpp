@@ -10,5 +10,4 @@
 /httpRequests/
 .venv
 .idea
-result
 cmake-build-debug
