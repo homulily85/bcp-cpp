@@ -19,7 +19,8 @@ namespace BCPSolver
         int upper_bound{};
         int lower_bound{};
 
-        SATSolver::SatSolver sat_solver{SATSolver::SatSolver()};
+        std::unique_ptr<SATSolver::SatSolver> sat_solver;
+
         SolverStatus status{UNKNOWN};
 
         double encoding_time{};
@@ -39,26 +40,32 @@ namespace BCPSolver
 
         virtual void encode() =0;
 
-        virtual std::vector<int>* create_assumptions() =0;
+        virtual std::vector<int>* create_assumptions(const std::string& variable_for_incremental) =0;
 
-        explicit BCPSolver(const Graph* graph, int upper_bound, bool use_symmetry_breaking, bool use_heuristic);
+        explicit BCPSolver(const Graph* graph, SATSolver::SOLVER solver, int upper_bound,
+                           bool use_symmetry_breaking, bool use_heuristic);
 
     public:
         BCPSolver(const BCPSolver& other) = delete;
+
         void operator=(const BCPSolver&) = delete;
 
         virtual ~BCPSolver() = default;
 
-        static BCPSolver* create_solver(SolvingMethod method, const Graph* graph, int upper_bound = -1,
+        static BCPSolver* create_solver(SolvingMethod method, const Graph* graph,
+                                        SATSolver::SOLVER solver = SATSolver::CADICAL,
+                                        int upper_bound = -1,
                                         bool use_symmetry_breaking = true,
-                                        bool use_heuristic = false);
+                                        bool use_heuristic = false, const std::string& width = "");
 
         SolverStatus non_optimal_solving(double time_limit);
 
         SolverStatus optimal_solving_non_incremental(double time_limit);
-        SolverStatus optimal_solving_incremental(double time_limit);
 
-        SolverStatus solve(double time_limit = NO_TIME_LIMIT, bool find_optimal = false, bool incremental = false);
+        SolverStatus optimal_solving_incremental(double time_limit, const std::string& variable_for_incremental);
+
+        SolverStatus solve(double time_limit = NO_TIME_LIMIT, bool find_optimal = false, bool incremental = false,
+                           const std::string& variable_for_incremental = "y");
 
         [[nodiscard]] int get_span() const;
 

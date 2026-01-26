@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 
+#include "sat_solver/SatSolver.h"
+
 namespace BCPSolver
 {
     enum SolverStatus
@@ -83,13 +85,17 @@ namespace BCPSolver
         int upper_bound;
         bool find_optimal;
         bool incremental_mode;
+        std::string variable_for_incremental;
         bool use_symmetry_breaking;
-        bool use_heuristics;
+        bool use_pairwise;
+        std::string width;
+        SATSolver::SOLVER solver;
         SolvingMethod solving_method;
         // Constructor with defaults
         ProgramConfig()
             : time_limit(NO_TIME_LIMIT), upper_bound(-1), find_optimal(true), incremental_mode(false),
-              use_symmetry_breaking(false), use_heuristics(false), solving_method(TwoVariablesGreater)
+              use_symmetry_breaking(false), use_pairwise(false), solver(SATSolver::CADICAL),
+              solving_method(TwoVariablesGreater)
         {
         }
     };

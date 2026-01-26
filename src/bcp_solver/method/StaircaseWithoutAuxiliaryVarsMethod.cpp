@@ -15,7 +15,7 @@ namespace BCPSolver
             {
                 if (c - weight < 1 && c + weight - 1 > span)
                 {
-                    sat_solver.add_clause(-x[{u, c}]);
+                    sat_solver->add_clause(-x[{u, c}]);
                 }
             }
 
@@ -25,7 +25,7 @@ namespace BCPSolver
                 {
                     for (int c = 1; c < span + 1; c++)
                     {
-                        sat_solver.add_clause(-x[{u, c}], -x[{v, c}]);
+                        sat_solver->add_clause(-x[{u, c}], -x[{v, c}]);
                     }
                     continue;
                 }
@@ -63,7 +63,7 @@ namespace BCPSolver
 
                         if (!clause.empty())
                         {
-                            sat_solver.add_clause(clause);
+                            sat_solver->add_clause(clause);
                         }
                     }
                 }

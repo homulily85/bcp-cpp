@@ -23,14 +23,15 @@ namespace BCPSolver
 
         void create_variable() override;
 
-        std::vector<int>* create_assumptions() override;
+        std::vector<int>* create_assumptions(const std::string& variable_for_incremental) override;
 
         friend class BCPSolver;
 
-        explicit OneVarGreaterMethod(const Graph* graph, const int upper_bound,
+        explicit OneVarGreaterMethod(const Graph* graph, const SATSolver::SOLVER solver,
+                                     const int upper_bound,
                                      const bool use_symmetry_breaking,
                                      const bool use_heuristic) : BCPSolver(
-            graph, upper_bound, use_symmetry_breaking, use_heuristic)
+            graph, solver, upper_bound, use_symmetry_breaking, use_heuristic)
         {
             if (use_heuristic)
             {

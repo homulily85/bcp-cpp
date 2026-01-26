@@ -8,7 +8,7 @@ void BCPSolver::OneVarGreaterMethod::first_constraint()
 {
     for (int i = 0; i < graph->get_number_of_nodes(); i++)
     {
-        sat_solver.add_clause(y[{i, 1}]);
+        sat_solver->add_clause(y[{i, 1}]);
     }
 }
 
@@ -18,7 +18,7 @@ void BCPSolver::OneVarGreaterMethod::second_constraint()
     {
         for (int c = 2; c < span + 1; c++)
         {
-            sat_solver.add_clause(-y[{i, c}], y[{i, c - 1}]);
+            sat_solver->add_clause(-y[{i, c}], y[{i, c - 1}]);
         }
     }
 }
@@ -34,31 +34,31 @@ void BCPSolver::OneVarGreaterMethod::third_constraint()
             {
                 if (c == span)
                 {
-                    sat_solver.add_clause(-y[{u, c}]);
+                    sat_solver->add_clause(-y[{u, c}]);
                 }
                 else
                 {
-                    sat_solver.add_clause(-y[{u, c}], y[{u, c + 1}]);
+                    sat_solver->add_clause(-y[{u, c}], y[{u, c + 1}]);
                 }
             }
             else if (c - weight < 0)
             {
-                sat_solver.add_clause(-y[{u, c}], y[{u, c + 1}], y[{v, c + weight}]);
+                sat_solver->add_clause(-y[{u, c}], y[{u, c + 1}], y[{v, c + weight}]);
             }
             else if (c + weight > span)
             {
                 if (c == span)
                 {
-                    sat_solver.add_clause(-y[{u, c}], -y[{v, c - weight + 1}]);
+                    sat_solver->add_clause(-y[{u, c}], -y[{v, c - weight + 1}]);
                 }
                 else
                 {
-                    sat_solver.add_clause(-y[{u, c}], y[{u, c + 1}], -y[{v, c - weight + 1}]);
+                    sat_solver->add_clause(-y[{u, c}], y[{u, c + 1}], -y[{v, c - weight + 1}]);
                 }
             }
             else
             {
-                sat_solver.add_clause(-y[{u, c}], y[{u, c + 1}], y[{v, c + weight}], -y[{v, c - weight + 1}]);
+                sat_solver->add_clause(-y[{u, c}], y[{u, c + 1}], y[{v, c + weight}], -y[{v, c - weight + 1}]);
             }
         }
     }
@@ -66,7 +66,7 @@ void BCPSolver::OneVarGreaterMethod::third_constraint()
 
 void BCPSolver::OneVarGreaterMethod::symmetry_breaking()
 {
-    sat_solver.add_clause(-y[{graph->get_highest_degree_vertex(), span / 2 + 1}]);
+    sat_solver->add_clause(-y[{graph->get_highest_degree_vertex(), span / 2 + 1}]);
 }
 
 void BCPSolver::OneVarGreaterMethod::encode()
@@ -95,18 +95,25 @@ void BCPSolver::OneVarGreaterMethod::create_variable()
     {
         for (int c = 1; c < span + 1; c++)
         {
-            y.insert(std::pair<std::pair<int, int>, int>({i, c}, sat_solver.create_new_variable()));
+            y.insert(std::pair<std::pair<int, int>, int>({i, c}, sat_solver->create_new_variable()));
         }
     }
 }
 
-std::vector<int>* BCPSolver::OneVarGreaterMethod::create_assumptions()
+std::vector<int>* BCPSolver::OneVarGreaterMethod::create_assumptions(const std::string& variable_for_incremental)
 {
-    auto* assumptions = new std::vector<int>(graph->get_number_of_nodes());
-
-    for (int i = 0; i < graph->get_number_of_nodes(); i++)
+    if (variable_for_incremental == "y")
     {
-        (*assumptions)[i] = -y[{i, span}];
+        auto* assumptions = new std::vector<int>(graph->get_number_of_nodes());
+
+        for (int i = 0; i < graph->get_number_of_nodes(); i++)
+        {
+            (*assumptions)[i] = -y[{i, span}];
+        }
+        return assumptions;
     }
-    return assumptions;
+    else
+    {
+        throw std::runtime_error("Invalid variable for incremental in OneVarGreaterMethod.");
+    }
 }
