@@ -23,7 +23,7 @@ The Bandwidth Coloring Problem (BCP) is a generalization of graph coloring in wh
 ## How to reproduce experiments
 1. Clone the repository:
    ```bash
-   git clone https://github.com/bcp-ese/bcp-ese.git
+   git clone https://github.com/homulily85/bcp-cpp.git
    cd bcp-ese
    ```
 
